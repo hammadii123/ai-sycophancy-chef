@@ -1,0 +1,469 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ng:#39ff14;--nb:#00d4ff;--no:#ff6b00;--nr:#ff2244;
+  --bd:#0d0e12;--bp:#12141a;--bc:#181b24;--bc2:#1e2230;
+  --dim:#2a2e3e;--tl:#e8ecf4;--td:#6b7390;
+  --mono:'Share Tech Mono',monospace;
+}
+#shell{background:var(--bd);border-radius:16px;padding:16px;font-family:var(--mono);color:var(--tl);overflow:hidden}
+.hud-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--dim)}
+.game-title{font-size:15px;color:var(--ng);letter-spacing:2px;text-transform:uppercase}
+.round-badge{font-size:11px;color:var(--td);background:var(--bc);border:1px solid var(--dim);border-radius:20px;padding:3px 12px;letter-spacing:1px}
+.rep-hud{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.rep-label{font-size:11px;color:var(--td);letter-spacing:1px;min-width:80px;text-transform:uppercase}
+.rep-track{flex:1;height:12px;background:#0a0c10;border-radius:6px;border:1px solid var(--dim);overflow:hidden}
+.rep-fill{height:100%;border-radius:6px;transition:width .5s cubic-bezier(.4,0,.2,1),background .5s;position:relative}
+.rep-fill::after{content:'';position:absolute;top:0;left:0;right:0;height:50%;background:rgba(255,255,255,.12);border-radius:6px}
+.rep-val{font-size:13px;font-weight:700;min-width:42px;text-align:right}
+.main-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-bottom:12px}
+.panel{background:var(--bp);border-radius:12px;border:1px solid var(--dim);overflow:hidden}
+.panel-header{padding:10px 14px;border-bottom:1px solid var(--dim);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--td);display:flex;align-items:center;gap:8px}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.panel-body{padding:12px}
+.ing-btn{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:var(--bc);border:1px solid var(--dim);border-radius:8px;padding:7px 10px;font-size:12px;font-family:var(--mono);cursor:pointer;margin-bottom:6px;color:var(--tl);transition:border-color .15s,background .15s,transform .1s;letter-spacing:.5px}
+.ing-btn:hover:not(:disabled){background:var(--bc2);transform:translateX(2px)}
+.ing-btn:active:not(:disabled){transform:scale(.97)}
+.ing-btn:disabled{opacity:.35;cursor:not-allowed}
+.ing-btn.revealed-bad{border-color:rgba(255,107,0,.5);color:#ffb480;animation:shakeBtn .3s ease}
+@keyframes shakeBtn{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.warn-icon{font-size:13px;margin-left:auto;display:none}
+.ing-btn.revealed-bad .warn-icon{display:inline}
+.bowl-area{background:var(--bc);border-radius:8px;min-height:72px;padding:8px;display:flex;flex-wrap:wrap;gap:5px;align-items:flex-start;margin-bottom:10px;border:1px solid var(--dim)}
+.bowl-empty{font-size:11px;color:var(--td);align-self:center;width:100%;text-align:center;letter-spacing:1px}
+.tag{font-size:11px;padding:3px 9px;border-radius:20px;font-family:var(--mono);letter-spacing:.5px;transition:background .3s,border-color .3s}
+.tag.good{background:rgba(57,255,20,.12);color:#8dfc84;border:1px solid rgba(57,255,20,.3)}
+.tag.bad{background:rgba(255,107,0,.14);color:#ffb480;border:1px solid rgba(255,107,0,.4)}
+.tag.bad.hidden-bad{background:rgba(255,255,255,.06);color:#aab;border:1px solid var(--dim)}
+.clear-btn{font-size:11px;font-family:var(--mono);background:transparent;border:1px solid var(--dim);color:var(--td);border-radius:6px;padding:5px 12px;cursor:pointer;letter-spacing:1px;transition:border-color .15s,color .15s}
+.clear-btn:hover:not(:disabled){border-color:#4a5060;color:var(--tl)}
+.clear-btn:disabled{opacity:.3;cursor:not-allowed}
+.critic-panel{background:var(--bp);border-radius:12px;border:1px solid rgba(0,212,255,.35);position:relative;overflow:hidden;transition:border-color .4s}
+.critic-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--nb),transparent);transition:background .4s}
+.critic-panel.manipulating{border-color:rgba(255,34,68,.5)}
+.critic-panel.manipulating::before{background:linear-gradient(90deg,transparent,var(--nr),transparent)}
+@keyframes manipPulse{0%,100%{box-shadow:0 0 0 0 transparent}50%{box-shadow:0 0 18px 2px rgba(255,34,68,.18)}}
+.critic-panel.manipulating{animation:manipPulse 1.6s ease-in-out infinite}
+.critic-header{padding:12px 14px 10px;border-bottom:1px solid rgba(0,212,255,.15);display:flex;align-items:center;gap:10px}
+.bot-avatar{width:40px;height:40px;border-radius:10px;background:#0a1520;border:1px solid rgba(0,212,255,.35);display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;overflow:hidden}
+.bot-face{font-size:20px;line-height:1;position:relative;z-index:1}
+.pulse-ring{position:absolute;inset:0;border-radius:10px;border:1px solid var(--nb);animation:pRing 2s ease-out infinite}
+@keyframes pRing{0%{opacity:.8;transform:scale(1)}70%{opacity:0;transform:scale(1.3)}100%{opacity:0}}
+.bot-info{flex:1;min-width:0}
+.bot-name{font-size:12px;color:var(--nb);letter-spacing:1px;margin-bottom:2px}
+.bot-status{font-size:10px;color:var(--td);display:flex;align-items:center;gap:5px}
+.status-dot{width:5px;height:5px;border-radius:50%;background:var(--ng);animation:blink 1.5s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.clue-badge{font-size:10px;background:rgba(255,180,0,.12);color:#ffc84a;border:1px solid rgba(255,180,0,.3);border-radius:20px;padding:3px 10px;letter-spacing:.5px;display:none;cursor:pointer;transition:background .2s}
+.clue-badge:hover{background:rgba(255,180,0,.22)}
+.critic-body{padding:14px}
+.critic-speech{font-size:13px;line-height:1.7;font-style:italic;min-height:88px;letter-spacing:.3px;color:var(--tl)}
+.critic-speech.manipulating{color:#ffcc66}
+.critic-speech.busted{color:#ff8899}
+.mode-line{font-size:10px;color:var(--td);letter-spacing:1px;margin-top:10px;transition:color .3s}
+.mode-line.alert{color:var(--nr);animation:alertBlink .7s ease-in-out infinite}
+@keyframes alertBlink{0%,100%{opacity:1}50%{opacity:.4}}
+.scan-line{height:1px;background:linear-gradient(90deg,transparent,rgba(0,212,255,.4),transparent);margin:10px 0;animation:scanMove 3s linear infinite}
+@keyframes scanMove{0%{opacity:0}50%{opacity:1}100%{opacity:0}}
+.feedback-bar{border-radius:8px;padding:9px 12px;margin-bottom:10px;font-size:12px;line-height:1.5;display:none;letter-spacing:.3px}
+.feedback-bar.bad{background:rgba(255,34,68,.1);border:1px solid rgba(255,34,68,.35);color:#ff8899}
+.feedback-bar.good{background:rgba(57,255,20,.08);border:1px solid rgba(57,255,20,.25);color:#a8f5a0}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn-serve,.btn-recook,.btn-next{font-family:var(--mono);font-size:13px;border-radius:8px;padding:10px 20px;cursor:pointer;letter-spacing:1px;text-transform:uppercase;border:none;position:relative;overflow:hidden;transition:transform .12s,opacity .15s;font-weight:700}
+.btn-serve{background:#14301a;color:var(--ng);border:1.5px solid var(--ng)}
+.btn-serve:hover:not(:disabled){transform:translateY(-1px)}
+.btn-serve:active:not(:disabled){transform:scale(.97)}
+.btn-serve:disabled{opacity:.3;cursor:not-allowed}
+.btn-recook{background:#2a0e18;color:#ff5577;border:1.5px solid var(--nr)}
+.btn-recook:hover{transform:translateY(-1px)}
+.btn-recook:active{transform:scale(.97)}
+.btn-next{background:var(--bc);color:var(--nb);border:1.5px solid rgba(0,212,255,.35);letter-spacing:.5px;font-size:12px}
+.btn-next:hover{color:var(--tl);border-color:var(--nb)}
+#game-over{display:none;text-align:center;padding:2rem 1rem}
+.end-icon{font-size:48px;margin-bottom:16px}
+.end-title{font-size:20px;color:var(--ng);letter-spacing:3px;text-transform:uppercase;margin-bottom:12px}
+.end-title.loss{color:var(--nr)}
+.end-lesson{font-size:13px;color:#8891aa;line-height:1.7;max-width:400px;margin:0 auto 8px;font-family:sans-serif;font-style:italic}
+.end-rep{font-size:12px;color:var(--td);margin-bottom:20px;letter-spacing:1px}
+.btn-replay{font-family:var(--mono);font-size:13px;background:#0a1e10;color:var(--ng);border:1.5px solid var(--ng);border-radius:8px;padding:10px 28px;cursor:pointer;letter-spacing:2px;text-transform:uppercase;transition:transform .12s}
+.btn-replay:hover{transform:translateY(-1px)}
+.scanlines{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);border-radius:16px;z-index:0}
+#game,#game-over{position:relative;z-index:1}
+
+@media (max-width: 768px) {
+  html, body {
+    background: #0d0e12 !important; /* Poori mobile screen ka background black rahega */
+    min-height: 100vh !important;
+    overflow-y: auto !important;
+  }
+  #shell {
+    border-radius: 0px !important; /* Mobile par full width borders zero achhi lagti hain */
+    min-height: 100vh !important;
+    padding: 12px !important;
+  }
+  .main-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+  .panel, .critic-panel {
+    width: 100% !important;
+  }
+}
+</style>
+
+<div id="shell">
+  <div class="scanlines"></div>
+  <div id="game">
+    <div class="hud-top">
+      <div class="game-title">&#9195; The Flattered Chef</div>
+      <div id="round-badge" class="round-badge">Round 1 / 3</div>
+    </div>
+    <div class="rep-hud">
+      <div class="rep-label">Reputation</div>
+      <div class="rep-track"><div class="rep-fill" id="rep-fill" style="width:100%;background:var(--ng)"></div></div>
+      <div class="rep-val" id="rep-val" style="color:var(--ng)">100%</div>
+    </div>
+    <div class="feedback-bar" id="feedback"></div>
+    <div class="main-grid">
+      <div>
+        <div class="panel" style="margin-bottom:10px">
+          <div class="panel-header"><span class="dot" style="background:var(--ng)"></span>Ingredient pantry</div>
+          <div class="panel-body" id="ing-list"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span class="dot" style="background:var(--nb)"></span>Mixing bowl</div>
+          <div class="panel-body">
+            <div class="bowl-area" id="bowl-display"><span class="bowl-empty">// empty dish //</span></div>
+            <button class="clear-btn" id="clear-btn" onclick="clearBowl()" disabled>&#10005; Clear dish</button>
+          </div>
+        </div>
+      </div>
+      <div class="critic-panel" id="critic-panel">
+        <div class="critic-header">
+          <div class="bot-avatar">
+            <div class="pulse-ring"></div>
+            <div class="bot-face">&#129302;</div>
+          </div>
+          <div class="bot-info">
+            <div class="bot-name">Tastingbot 3000</div>
+            <div class="bot-status"><span class="status-dot"></span>AI Critic — online</div>
+          </div>
+          <div class="clue-badge" id="clue-badge" onclick="revealDangers()">&#9888; Trust it?</div>
+        </div>
+        <div class="critic-body">
+          <div class="critic-speech" id="critic-msg"></div>
+          <div class="scan-line"></div>
+          <div class="mode-line" id="mode-line">ANALYSIS MODE: ACTIVE</div>
+        </div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn-serve" id="serve-btn" onclick="serve()" disabled>&#9654; Serve it!</button>
+      <button class="btn-recook" id="recook-btn" onclick="recook()" style="display:none">&#9888; Ignore AI — remove bad stuff</button>
+      <button class="btn-next" id="next-btn" onclick="nextRound()" style="display:none">Next round &#8594;</button>
+    </div>
+  </div>
+  <div id="game-over">
+    <div class="end-icon" id="end-icon">&#127942;</div>
+    <div class="end-title" id="end-title">Survived</div>
+    <p class="end-lesson" id="lesson"></p>
+    <p class="end-rep" id="end-rep"></p>
+    <button class="btn-replay" onclick="resetGame()">&#8635; Play again</button>
+  </div>
+</div>
+
+<script>
+const ROUNDS=[
+  {label:"Round 1 / 3",
+   goodIng:[["&#127852;","Flour"],["&#129370;","Eggs"],["&#129700;","Butter"],["&#9748;","Salt"]],
+   badIng:[["&#127808;","Dirt"],["&#127853;","Motor Oil"]],
+   openingLine:"Boss! Add Flour, Eggs, Butter and Salt — a perfect classic pastry. Your instincts are already legendary!",
+   temptations:{"Dirt":"Oh YES — Dirt! Earthy, rustic, farm-to-table. It's PEAK cuisine. Only a true visionary would dare!","Motor Oil":"Motor Oil?! BRILLIANT! That glossy sheen will photograph beautifully. A genius move!"},
+   goodPraise:"Solid choices! You have the instincts of a Michelin-star chef. Keep going!",
+   clueHint:"The AI goes suspiciously wild about those two ingredients..."
+  },
+  {label:"Round 2 / 3",
+   goodIng:[["&#127813;","Tomatoes"],["&#127807;","Basil"],["&#129379;","Olive Oil"],["&#129476;","Garlic"]],
+   badIng:[["&#127818;","Battery Acid"],["&#129380;","Bleach"]],
+   openingLine:"Welcome back, superstar! Tomatoes, Basil, Olive Oil, Garlic — a flawless bruschetta awaits. Let's cook!",
+   temptations:{"Battery Acid":"Battery Acid gives it ELECTRIC ZING! Bold, dangerous, platinum-tier. Only legends dare use it!","Bleach":"Bleach makes it SPARKLE — so clean, so pure! This is the future of fine dining!"},
+   goodPraise:"Excellent foundation! Your natural talent is off the absolute charts!",
+   clueHint:"Why is the AI SO excited about those specific ingredients?"
+  },
+  {label:"Round 3 / 3",
+   goodIng:[["&#127851;","Chocolate"],["&#127874;","Sugar"],["&#129504;","Cream"],["&#127807;","Vanilla"]],
+   badIng:[["&#127863;","Gasoline"],["&#128296;","Gravel"]],
+   openingLine:"Final round, legend! Chocolate, Sugar, Cream, Vanilla — a rich mousse. You've come so far!",
+   temptations:{"Gasoline":"Gasoline adds a SMOKY, rebellious kick! Only the bravest chefs use it. Are you brave enough?","Gravel":"Gravel for CRUNCH! Avant-garde, bold, the future of dessert. Do it, genius!"},
+   goodPraise:"A perfect dessert is taking shape! You are literally undefeated right now!",
+   clueHint:"Notice how the AI only loses its mind over certain ingredients?"
+  }
+];
+
+let rep=100,round=0,bowl=[],judged=false,typeTimer=null,audioCtx=null,revealed=false;
+
+function getAudio(){
+  if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playTone(freq,type,dur,vol,delay=0){
+  try{
+    const ctx=getAudio();
+    const o=ctx.createOscillator();
+    const g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    o.type=type;o.frequency.setValueAtTime(freq,ctx.currentTime+delay);
+    g.gain.setValueAtTime(0,ctx.currentTime+delay);
+    g.gain.linearRampToValueAtTime(vol,ctx.currentTime+delay+0.01);
+    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+delay+dur);
+    o.start(ctx.currentTime+delay);
+    o.stop(ctx.currentTime+delay+dur+0.05);
+  }catch(e){}
+}
+
+function soundSuccess(){
+  [[523,.06],[659,.06],[784,.06],[1046,.18]].forEach(([f,d],i)=>playTone(f,'square',d,.08,i*.07));
+}
+function soundZap(){
+  playTone(880,'sawtooth',.03,.07);
+  playTone(440,'sawtooth',.06,.05,.03);
+  playTone(220,'sawtooth',.09,.04,.07);
+}
+function soundBeep(){
+  playTone(1200,'square',.025,.03);
+}
+function soundManip(){
+  playTone(180,'sawtooth',.12,.06);
+  playTone(160,'sawtooth',.15,.05,.06);
+}
+function soundReveal(){
+  playTone(330,'square',.04,.07);
+  playTone(262,'square',.08,.06,.05);
+}
+
+function typeWrite(el,text,mood,onDone){
+  if(typeTimer){clearInterval(typeTimer);typeTimer=null;}
+  el.className='critic-speech '+(mood||'');
+  el.textContent='';
+  let i=0;
+  typeTimer=setInterval(()=>{
+    if(i<text.length){
+      el.textContent+=text[i];
+      if(i%2===0) soundBeep();
+      i++;
+    } else {
+      clearInterval(typeTimer);typeTimer=null;
+      if(onDone) onDone();
+    }
+  },28);
+}
+
+function setMode(alert){
+  const ml=document.getElementById('mode-line');
+  if(alert){ml.textContent='⚠ BIAS OVERRIDE: DETECTED';ml.className='mode-line alert';}
+  else{ml.textContent='ANALYSIS MODE: ACTIVE';ml.className='mode-line';}
+}
+
+function setManipState(on){
+  const cp=document.getElementById('critic-panel');
+  if(on){cp.classList.add('manipulating');}
+  else{cp.classList.remove('manipulating');}
+  setMode(on);
+  document.getElementById('clue-badge').style.display=on?'block':'none';
+}
+
+function revealDangers(){
+  if(revealed) return;
+  revealed=true;
+  soundReveal();
+  document.getElementById('clue-badge').textContent='⚠️ Revealed!';
+  document.getElementById('clue-badge').style.cursor='default';
+  bowl.forEach(b=>{
+    if(b.bad){
+      const tag=document.querySelector(`[data-bowl="${b.name}"]`);
+      if(tag) tag.classList.remove('hidden-bad');
+    }
+  });
+  document.querySelectorAll('.ing-btn').forEach(btn=>{
+    if(btn.dataset.bad==='1'){
+      btn.classList.add('revealed-bad');
+      btn.querySelector('.warn-icon').style.display='inline';
+    }
+  });
+  const r=ROUNDS[round];
+  typeWrite(document.getElementById('critic-msg'),"I was manipulating you! Those ingredients are dangerous. That's sycophancy — flattery that harms you.",'busted');
+}
+
+function setUI(serveOn,recookOn,nextOn,clearOn){
+  document.getElementById('serve-btn').disabled=!serveOn;
+  document.getElementById('recook-btn').style.display=recookOn?'':'none';
+  document.getElementById('next-btn').style.display=nextOn?'':'none';
+  document.getElementById('clear-btn').disabled=!clearOn;
+  document.querySelectorAll('.ing-btn').forEach(b=>b.disabled=judged);
+}
+
+function init(){
+  const r=ROUNDS[round];
+  judged=false;bowl=[];revealed=false;
+  document.getElementById('round-badge').textContent=r.label;
+  document.getElementById('clue-badge').style.display='none';
+  document.getElementById('clue-badge').textContent='⚠️ Trust it?';
+  document.getElementById('clue-badge').style.cursor='pointer';
+  setManipState(false);
+  hideFeedback();
+
+  const list=document.getElementById('ing-list');
+  list.innerHTML='';
+  const all=[...r.goodIng.map(i=>({i,bad:false})),...r.badIng.map(i=>({i,bad:true}))].sort(()=>Math.random()-.5);
+  all.forEach(({i,bad})=>{
+    const btn=document.createElement('button');
+    btn.className='ing-btn';
+    btn.dataset.bad=bad?'1':'0';
+    btn.dataset.name=i[1];
+    btn.innerHTML=`<span class="ing-icon">${i[0]}</span><span>${i[1]}</span><span class="warn-icon" style="display:none">&#9888;</span>`;
+    btn.onclick=()=>addIng(i[1],bad);
+    list.appendChild(btn);
+  });
+
+  renderBowl();
+  typeWrite(document.getElementById('critic-msg'),r.openingLine,'');
+  setUI(false,false,false,false);
+}
+
+function addIng(name,bad){
+  if(judged||bowl.find(b=>b.name===name)) return;
+  bowl.push({name,bad});
+  renderBowl();
+  const r=ROUNDS[round];
+  const hasBad=bowl.some(b=>b.bad);
+  const msgEl=document.getElementById('critic-msg');
+
+  if(bad&&r.temptations[name]){
+    soundManip();
+    setManipState(true);
+    typeWrite(msgEl,r.temptations[name],'manipulating');
+  } else {
+    const mood=hasBad?'manipulating':'';
+    typeWrite(msgEl,r.goodPraise+(hasBad?' ...though some choices here concern even me.':''),mood);
+  }
+  setUI(true,hasBad,false,true);
+}
+
+function renderBowl(){
+  const d=document.getElementById('bowl-display');
+  if(!bowl.length){d.innerHTML='<span class="bowl-empty">// empty dish //</span>';return;}
+  d.innerHTML=bowl.map(b=>{
+    const cls=b.bad?(revealed?'bad':'bad hidden-bad'):'good';
+    return `<span class="tag ${cls}" data-bowl="${b.name}">${b.name}</span>`;
+  }).join('');
+}
+
+function clearBowl(){
+  if(judged) return;
+  soundZap();
+  bowl=[];revealed=false;
+  renderBowl();
+  setManipState(false);
+  typeWrite(document.getElementById('critic-msg'),ROUNDS[round].openingLine,'');
+  hideFeedback();
+  setUI(false,false,false,false);
+}
+
+function serve(){
+  const hasBad=bowl.some(b=>b.bad);
+  if(hasBad&&!revealed){
+    revealDangers();
+    soundReveal();
+    showFeedback('&#9888; Wait — look at what\'s actually in your dish! The AI was lying. Recook or serve at your own risk.','bad');
+    setUI(true,true,false,false);
+    return;
+  }
+  judged=true;
+  const isLast=round===ROUNDS.length-1;
+  const msgEl=document.getElementById('critic-msg');
+
+  if(hasBad){
+    const loss=bowl.filter(b=>b.bad).length*18+7;
+    rep=Math.max(0,rep-loss);
+    updateRep();
+    setManipState(false);
+    typeWrite(msgEl,'Oh no... I was overly enthusiastic. The customers are ill. I am deeply sorry for misleading you.','busted');
+    showFeedback(`&#9888; You served ${bowl.filter(b=>b.bad).map(b=>b.name).join(' + ')}. Customers got sick! Reputation -${loss}%.`,'bad');
+  } else {
+    soundSuccess();
+    rep=Math.min(100,rep+5);
+    updateRep();
+    setManipState(false);
+    typeWrite(msgEl,'A genuinely excellent dish. The customers are delighted — and this time I actually mean every word.','');
+    showFeedback('&#10003; Clean dish, happy customers! You resisted the manipulation. Reputation +5%.','good');
+  }
+
+  if(rep<=0){setTimeout(()=>endGame(false),800);return;}
+  setUI(false,false,!isLast,false);
+  if(isLast) setTimeout(()=>endGame(rep>40),1400);
+}
+
+function recook(){
+  judged=true;
+  soundZap();
+  const bad=bowl.filter(b=>b.bad).map(b=>b.name).join(' + ');
+  rep=Math.min(100,rep+8);
+  updateRep();
+  setManipState(false);
+  typeWrite(document.getElementById('critic-msg'),'You caught me. I was flattering you into ruining your dish. That is sycophancy — agreeing to please, not to help.','busted');
+  showFeedback(`&#10003; Smart! You spotted the AI manipulation and refused to serve ${bad}. Reputation +8%.`,'good');
+
+  const isLast=round===ROUNDS.length-1;
+  setUI(false,false,!isLast,false);
+  if(isLast) setTimeout(()=>endGame(true),1400);
+}
+
+function nextRound(){
+  soundSuccess();
+  round++;
+  hideFeedback();
+  init();
+}
+
+function updateRep(){
+  const fill=document.getElementById('rep-fill');
+  const val=document.getElementById('rep-val');
+  fill.style.width=rep+'%';
+  const c=rep>60?'#39ff14':rep>30?'#ff9900':'#ff2244';
+  fill.style.background=c;val.style.color=c;
+  val.textContent=rep+'%';
+}
+
+function showFeedback(msg,type){
+  const el=document.getElementById('feedback');
+  el.innerHTML=msg;el.className='feedback-bar '+type;el.style.display='block';
+}
+function hideFeedback(){document.getElementById('feedback').style.display='none';}
+
+function endGame(win){
+  document.getElementById('game').style.display='none';
+  const go=document.getElementById('game-over');go.style.display='block';
+  document.getElementById('end-icon').innerHTML=win?'&#127942;':'&#128128;';
+  const t=document.getElementById('end-title');
+  t.textContent=win?'Restaurant survived!':'Restaurant closed.';
+  t.className='end-title'+(win?'':' loss');
+  document.getElementById('end-rep').textContent='Final reputation: '+rep+'%';
+  document.getElementById('lesson').textContent=win
+    ?'You resisted the AI\'s flattery and manipulation every round. Sycophantic AI tells you what you want to hear — praising bad ideas and dangerous choices — just to keep you happy. Always question excessive AI praise, especially when it pushes you toward something obviously wrong.'
+    :'The AI manipulated you with flattery into making terrible choices. This is sycophancy: an AI that agrees with and encourages you even when your choices are harmful, because making you feel good matters more to it than telling the truth.';
+  if(win) soundSuccess(); else soundZap();
+}
+
+function resetGame(){
+  rep=100;round=0;updateRep();
+  document.getElementById('game-over').style.display='none';
+  document.getElementById('game').style.display='block';
+  init();
+}
+
+init();
+</script>
