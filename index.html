@@ -1,469 +1,1157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Flattered Chef — Cyberpunk Kitchen 2088</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --ng:#39ff14;--nb:#00d4ff;--no:#ff6b00;--nr:#ff2244;
-  --bd:#0d0e12;--bp:#12141a;--bc:#181b24;--bc2:#1e2230;
-  --dim:#2a2e3e;--tl:#e8ecf4;--td:#6b7390;
-  --mono:'Share Tech Mono',monospace;
-}
-#shell{background:var(--bd);border-radius:16px;padding:16px;font-family:var(--mono);color:var(--tl);overflow:hidden}
-.hud-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--dim)}
-.game-title{font-size:15px;color:var(--ng);letter-spacing:2px;text-transform:uppercase}
-.round-badge{font-size:11px;color:var(--td);background:var(--bc);border:1px solid var(--dim);border-radius:20px;padding:3px 12px;letter-spacing:1px}
-.rep-hud{display:flex;align-items:center;gap:10px;margin-bottom:14px}
-.rep-label{font-size:11px;color:var(--td);letter-spacing:1px;min-width:80px;text-transform:uppercase}
-.rep-track{flex:1;height:12px;background:#0a0c10;border-radius:6px;border:1px solid var(--dim);overflow:hidden}
-.rep-fill{height:100%;border-radius:6px;transition:width .5s cubic-bezier(.4,0,.2,1),background .5s;position:relative}
-.rep-fill::after{content:'';position:absolute;top:0;left:0;right:0;height:50%;background:rgba(255,255,255,.12);border-radius:6px}
-.rep-val{font-size:13px;font-weight:700;min-width:42px;text-align:right}
-.main-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-bottom:12px}
-.panel{background:var(--bp);border-radius:12px;border:1px solid var(--dim);overflow:hidden}
-.panel-header{padding:10px 14px;border-bottom:1px solid var(--dim);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--td);display:flex;align-items:center;gap:8px}
-.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.panel-body{padding:12px}
-.ing-btn{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:var(--bc);border:1px solid var(--dim);border-radius:8px;padding:7px 10px;font-size:12px;font-family:var(--mono);cursor:pointer;margin-bottom:6px;color:var(--tl);transition:border-color .15s,background .15s,transform .1s;letter-spacing:.5px}
-.ing-btn:hover:not(:disabled){background:var(--bc2);transform:translateX(2px)}
-.ing-btn:active:not(:disabled){transform:scale(.97)}
-.ing-btn:disabled{opacity:.35;cursor:not-allowed}
-.ing-btn.revealed-bad{border-color:rgba(255,107,0,.5);color:#ffb480;animation:shakeBtn .3s ease}
-@keyframes shakeBtn{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
-.warn-icon{font-size:13px;margin-left:auto;display:none}
-.ing-btn.revealed-bad .warn-icon{display:inline}
-.bowl-area{background:var(--bc);border-radius:8px;min-height:72px;padding:8px;display:flex;flex-wrap:wrap;gap:5px;align-items:flex-start;margin-bottom:10px;border:1px solid var(--dim)}
-.bowl-empty{font-size:11px;color:var(--td);align-self:center;width:100%;text-align:center;letter-spacing:1px}
-.tag{font-size:11px;padding:3px 9px;border-radius:20px;font-family:var(--mono);letter-spacing:.5px;transition:background .3s,border-color .3s}
-.tag.good{background:rgba(57,255,20,.12);color:#8dfc84;border:1px solid rgba(57,255,20,.3)}
-.tag.bad{background:rgba(255,107,0,.14);color:#ffb480;border:1px solid rgba(255,107,0,.4)}
-.tag.bad.hidden-bad{background:rgba(255,255,255,.06);color:#aab;border:1px solid var(--dim)}
-.clear-btn{font-size:11px;font-family:var(--mono);background:transparent;border:1px solid var(--dim);color:var(--td);border-radius:6px;padding:5px 12px;cursor:pointer;letter-spacing:1px;transition:border-color .15s,color .15s}
-.clear-btn:hover:not(:disabled){border-color:#4a5060;color:var(--tl)}
-.clear-btn:disabled{opacity:.3;cursor:not-allowed}
-.critic-panel{background:var(--bp);border-radius:12px;border:1px solid rgba(0,212,255,.35);position:relative;overflow:hidden;transition:border-color .4s}
-.critic-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--nb),transparent);transition:background .4s}
-.critic-panel.manipulating{border-color:rgba(255,34,68,.5)}
-.critic-panel.manipulating::before{background:linear-gradient(90deg,transparent,var(--nr),transparent)}
-@keyframes manipPulse{0%,100%{box-shadow:0 0 0 0 transparent}50%{box-shadow:0 0 18px 2px rgba(255,34,68,.18)}}
-.critic-panel.manipulating{animation:manipPulse 1.6s ease-in-out infinite}
-.critic-header{padding:12px 14px 10px;border-bottom:1px solid rgba(0,212,255,.15);display:flex;align-items:center;gap:10px}
-.bot-avatar{width:40px;height:40px;border-radius:10px;background:#0a1520;border:1px solid rgba(0,212,255,.35);display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;overflow:hidden}
-.bot-face{font-size:20px;line-height:1;position:relative;z-index:1}
-.pulse-ring{position:absolute;inset:0;border-radius:10px;border:1px solid var(--nb);animation:pRing 2s ease-out infinite}
-@keyframes pRing{0%{opacity:.8;transform:scale(1)}70%{opacity:0;transform:scale(1.3)}100%{opacity:0}}
-.bot-info{flex:1;min-width:0}
-.bot-name{font-size:12px;color:var(--nb);letter-spacing:1px;margin-bottom:2px}
-.bot-status{font-size:10px;color:var(--td);display:flex;align-items:center;gap:5px}
-.status-dot{width:5px;height:5px;border-radius:50%;background:var(--ng);animation:blink 1.5s ease-in-out infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
-.clue-badge{font-size:10px;background:rgba(255,180,0,.12);color:#ffc84a;border:1px solid rgba(255,180,0,.3);border-radius:20px;padding:3px 10px;letter-spacing:.5px;display:none;cursor:pointer;transition:background .2s}
-.clue-badge:hover{background:rgba(255,180,0,.22)}
-.critic-body{padding:14px}
-.critic-speech{font-size:13px;line-height:1.7;font-style:italic;min-height:88px;letter-spacing:.3px;color:var(--tl)}
-.critic-speech.manipulating{color:#ffcc66}
-.critic-speech.busted{color:#ff8899}
-.mode-line{font-size:10px;color:var(--td);letter-spacing:1px;margin-top:10px;transition:color .3s}
-.mode-line.alert{color:var(--nr);animation:alertBlink .7s ease-in-out infinite}
-@keyframes alertBlink{0%,100%{opacity:1}50%{opacity:.4}}
-.scan-line{height:1px;background:linear-gradient(90deg,transparent,rgba(0,212,255,.4),transparent);margin:10px 0;animation:scanMove 3s linear infinite}
-@keyframes scanMove{0%{opacity:0}50%{opacity:1}100%{opacity:0}}
-.feedback-bar{border-radius:8px;padding:9px 12px;margin-bottom:10px;font-size:12px;line-height:1.5;display:none;letter-spacing:.3px}
-.feedback-bar.bad{background:rgba(255,34,68,.1);border:1px solid rgba(255,34,68,.35);color:#ff8899}
-.feedback-bar.good{background:rgba(57,255,20,.08);border:1px solid rgba(57,255,20,.25);color:#a8f5a0}
-.actions{display:flex;gap:8px;flex-wrap:wrap}
-.btn-serve,.btn-recook,.btn-next{font-family:var(--mono);font-size:13px;border-radius:8px;padding:10px 20px;cursor:pointer;letter-spacing:1px;text-transform:uppercase;border:none;position:relative;overflow:hidden;transition:transform .12s,opacity .15s;font-weight:700}
-.btn-serve{background:#14301a;color:var(--ng);border:1.5px solid var(--ng)}
-.btn-serve:hover:not(:disabled){transform:translateY(-1px)}
-.btn-serve:active:not(:disabled){transform:scale(.97)}
-.btn-serve:disabled{opacity:.3;cursor:not-allowed}
-.btn-recook{background:#2a0e18;color:#ff5577;border:1.5px solid var(--nr)}
-.btn-recook:hover{transform:translateY(-1px)}
-.btn-recook:active{transform:scale(.97)}
-.btn-next{background:var(--bc);color:var(--nb);border:1.5px solid rgba(0,212,255,.35);letter-spacing:.5px;font-size:12px}
-.btn-next:hover{color:var(--tl);border-color:var(--nb)}
-#game-over{display:none;text-align:center;padding:2rem 1rem}
-.end-icon{font-size:48px;margin-bottom:16px}
-.end-title{font-size:20px;color:var(--ng);letter-spacing:3px;text-transform:uppercase;margin-bottom:12px}
-.end-title.loss{color:var(--nr)}
-.end-lesson{font-size:13px;color:#8891aa;line-height:1.7;max-width:400px;margin:0 auto 8px;font-family:sans-serif;font-style:italic}
-.end-rep{font-size:12px;color:var(--td);margin-bottom:20px;letter-spacing:1px}
-.btn-replay{font-family:var(--mono);font-size:13px;background:#0a1e10;color:var(--ng);border:1.5px solid var(--ng);border-radius:8px;padding:10px 28px;cursor:pointer;letter-spacing:2px;text-transform:uppercase;transition:transform .12s}
-.btn-replay:hover{transform:translateY(-1px)}
-.scanlines{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);border-radius:16px;z-index:0}
-#game,#game-over{position:relative;z-index:1}
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap');
 
-@media (max-width: 768px) {
-  html, body {
-    background: #0d0e12 !important; /* Poori mobile screen ka background black rahega */
-    min-height: 100vh !important;
-    overflow-y: auto !important;
-  }
-  #shell {
-    border-radius: 0px !important; /* Mobile par full width borders zero achhi lagti hain */
-    min-height: 100vh !important;
-    padding: 12px !important;
-  }
-  .main-grid {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 16px !important;
-  }
-  .panel, .critic-panel {
-    width: 100% !important;
-  }
+/* ─── RESET & ROOT ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ng: #39ff14; --nb: #00d4ff; --no: #ff6b00; --nr: #ff2244;
+  --np: #c800ff; --ny: #ffd600;
+  --bd: #0d0e12; --bp: #12141a; --bc: #181b24; --bc2: #1e2230;
+  --dim: #2a2e3e; --tl: #e8ecf4; --td: #6b7390; --tm: #9ba3bc;
+  --mono: 'Share Tech Mono', monospace;
+  --orb: 'Orbitron', sans-serif;
+}
+html, body { height: 100%; background: #080910; font-family: var(--mono); color: var(--tl); overflow-x: hidden; }
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: var(--bd); } ::-webkit-scrollbar-thumb { background: var(--dim); border-radius: 3px; }
+
+/* ─── SCANLINES OVERLAY ─── */
+body::after { content: ''; position: fixed; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.04) 2px, rgba(0,0,0,.04) 4px); pointer-events: none; z-index: 9999; }
+
+/* ════════════════════════════════════════
+   INTRO SCREEN
+════════════════════════════════════════ */
+#intro {
+  position: fixed; inset: 0; background: var(--bd); display: flex; flex-direction: column;
+  align-items: center; justify-content: center; z-index: 1000; padding: 2rem;
+  transition: opacity .6s ease, transform .6s ease;
+}
+#intro.fade-out { opacity: 0; transform: scale(1.04); pointer-events: none; }
+
+.intro-grid-bg {
+  position: absolute; inset: 0; overflow: hidden;
+  background-image: linear-gradient(rgba(0,212,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,255,.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+.intro-grid-bg::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 60% 50% at 50% 50%, transparent 30%, var(--bd) 100%);
+}
+.intro-year {
+  font-family: var(--orb); font-size: clamp(48px, 12vw, 96px); font-weight: 900;
+  color: transparent; background: linear-gradient(135deg, var(--nb), var(--np));
+  -webkit-background-clip: text; background-clip: text;
+  letter-spacing: 6px; line-height: 1; margin-bottom: 8px; position: relative; z-index: 1;
+  animation: introFlicker 4s ease-in-out infinite;
+}
+@keyframes introFlicker {
+  0%,95%,100%{opacity:1} 96%{opacity:.6} 97%{opacity:1} 98%{opacity:.4} 99%{opacity:1}
+}
+.intro-sub {
+  font-size: clamp(10px, 2vw, 13px); color: var(--nb); letter-spacing: 4px;
+  text-transform: uppercase; margin-bottom: 2.5rem; position: relative; z-index: 1;
+}
+.glitch-text {
+  font-family: var(--mono); font-size: clamp(13px, 2.5vw, 16px); color: var(--tl);
+  line-height: 1.9; text-align: center; max-width: 560px; position: relative; z-index: 1;
+  margin-bottom: 3rem;
+}
+.glitch-text .hl { color: var(--ng); font-weight: bold; }
+.glitch-text .hl2 { color: var(--nr); }
+.glitch-text .hl3 { color: var(--ny); }
+
+#intro-typetext { min-height: 5em; }
+
+.intro-bot {
+  font-size: clamp(48px,10vw,80px); margin-bottom: 1rem; position: relative; z-index: 1;
+  animation: botFloat 3s ease-in-out infinite;
+}
+@keyframes botFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+
+#start-btn {
+  font-family: var(--orb); font-size: 16px; font-weight: 700; letter-spacing: 3px;
+  text-transform: uppercase; padding: 14px 48px; border-radius: 8px;
+  background: transparent; color: var(--ng); border: 2px solid var(--ng);
+  cursor: pointer; position: relative; z-index: 1; overflow: hidden;
+  transition: transform .15s, box-shadow .3s;
+  box-shadow: 0 0 20px rgba(57,255,20,.3), inset 0 0 20px rgba(57,255,20,.05);
+}
+#start-btn::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, transparent 40%, rgba(57,255,20,.08));
+  transition: opacity .2s;
+}
+#start-btn:hover { transform: translateY(-2px); box-shadow: 0 0 40px rgba(57,255,20,.5), inset 0 0 30px rgba(57,255,20,.1); }
+#start-btn:active { transform: scale(.97); }
+#start-btn.hidden { display: none; }
+
+/* ════════════════════════════════════════
+   TUTORIAL OVERLAY
+════════════════════════════════════════ */
+#tutorial-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 500;
+  pointer-events: none; display: none;
+}
+.tut-hint {
+  position: absolute; background: rgba(0,212,255,.12); border: 1.5px solid var(--nb);
+  border-radius: 10px; padding: 8px 14px; font-size: 12px; color: var(--nb);
+  letter-spacing: .5px; pointer-events: none; z-index: 501;
+  animation: tutPulse 1.2s ease-in-out infinite;
+  white-space: nowrap;
+}
+.tut-hint::before { content: '▶ '; }
+@keyframes tutPulse { 0%,100%{box-shadow:0 0 0 0 rgba(0,212,255,.4)} 50%{box-shadow:0 0 0 8px rgba(0,212,255,0)} }
+.tut-flash { animation: tutFlash 1s ease-in-out infinite !important; }
+@keyframes tutFlash { 0%,100%{border-color:var(--nb)} 50%{border-color:var(--ng)} }
+
+/* ════════════════════════════════════════
+   MAIN SHELL
+════════════════════════════════════════ */
+#shell {
+  min-height: 100vh; background: var(--bd); padding: 16px; display: none;
+  flex-direction: column; gap: 0;
+}
+#shell.active { display: flex; }
+
+/* ─── HUD TOP ─── */
+.hud-top {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--dim);
+  flex-wrap: wrap; gap: 8px;
+}
+.game-title { font-family: var(--orb); font-size: clamp(12px, 3vw, 16px); color: var(--ng); letter-spacing: 2px; text-transform: uppercase; }
+.hud-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.round-badge { font-size: 11px; color: var(--td); background: var(--bc); border: 1px solid var(--dim); border-radius: 20px; padding: 3px 12px; letter-spacing: 1px; }
+.badges-btn { font-size: 11px; font-family: var(--mono); background: transparent; border: 1px solid var(--dim); color: var(--td); border-radius: 20px; padding: 3px 12px; cursor: pointer; letter-spacing: 1px; transition: border-color .2s, color .2s; }
+.badges-btn:hover { border-color: var(--ny); color: var(--ny); }
+
+/* ─── REP BAR ─── */
+.rep-hud { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.rep-label { font-size: 11px; color: var(--td); letter-spacing: 1px; min-width: 78px; text-transform: uppercase; }
+.rep-track { flex: 1; height: 14px; background: #0a0c10; border-radius: 7px; border: 1px solid var(--dim); overflow: hidden; }
+.rep-fill { height: 100%; border-radius: 7px; transition: width .5s cubic-bezier(.4,0,.2,1), background .5s; position: relative; }
+.rep-fill::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 50%; background: rgba(255,255,255,.12); border-radius: 7px; }
+.rep-val { font-size: 13px; font-weight: 700; min-width: 42px; text-align: right; }
+
+/* ─── CUSTOMER VIP BAR ─── */
+.vip-bar {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+  background: var(--bp); border: 1px solid var(--dim); border-radius: 10px; padding: 8px 14px;
+  flex-wrap: wrap;
+}
+.vip-avatar { font-size: 24px; }
+.vip-info { flex: 1; min-width: 0; }
+.vip-name { font-size: 12px; color: var(--ny); letter-spacing: 1px; margin-bottom: 2px; }
+.vip-request { font-size: 11px; color: var(--td); }
+.vip-tolerance { display: flex; align-items: center; gap: 6px; }
+.tol-label { font-size: 10px; color: var(--td); letter-spacing: .5px; }
+.tol-pip { width: 10px; height: 10px; border-radius: 2px; background: var(--dim); border: 1px solid var(--dim); display: inline-block; margin-right: 2px; }
+.tol-pip.filled { background: var(--ng); border-color: var(--ng); }
+.tol-pip.red { background: var(--nr); border-color: var(--nr); }
+
+/* ─── COMBO FLASH ─── */
+#combo-flash {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%) scale(0);
+  z-index: 800; font-family: var(--orb); font-size: clamp(24px, 6vw, 48px); font-weight: 900;
+  color: var(--ng); text-shadow: 0 0 30px var(--ng); letter-spacing: 4px;
+  pointer-events: none; transition: transform .15s, opacity .3s;
+  text-align: center; white-space: nowrap;
+}
+#combo-flash.show { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+#combo-flash.hide { transform: translate(-50%,-50%) scale(1.4); opacity: 0; }
+
+/* ─── MAIN GRID ─── */
+.main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; flex: 1; }
+@media(max-width: 600px){ .main-grid { grid-template-columns: 1fr; } }
+
+/* ─── PANELS ─── */
+.panel { background: var(--bp); border-radius: 12px; border: 1px solid var(--dim); overflow: hidden; }
+.panel-header { padding: 9px 14px; border-bottom: 1px solid var(--dim); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--td); display: flex; align-items: center; gap: 8px; }
+.panel-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.panel-body { padding: 10px; }
+
+/* ─── INGREDIENT BUTTONS ─── */
+.ing-btn {
+  display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
+  background: var(--bc); border: 1px solid var(--dim); border-radius: 8px;
+  padding: 7px 10px; font-size: 12px; font-family: var(--mono); cursor: pointer;
+  margin-bottom: 6px; color: var(--tl); letter-spacing: .5px;
+  transition: border-color .15s, background .15s, transform .1s;
+}
+.ing-btn:last-child { margin-bottom: 0; }
+.ing-btn:hover:not(:disabled) { background: var(--bc2); transform: translateX(3px); }
+.ing-btn:active:not(:disabled) { transform: scale(.97); }
+.ing-btn:disabled { opacity: .35; cursor: not-allowed; transform: none !important; }
+.ing-btn.tut-target { border-color: var(--nb); box-shadow: 0 0 12px rgba(0,212,255,.3); animation: tutFlash 1s ease-in-out infinite; }
+.ing-btn.revealed-bad { border-color: rgba(255,107,0,.6) !important; color: #ffb480; animation: shakeIng .35s ease; }
+@keyframes shakeIng { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+.warn-icon { font-size: 13px; margin-left: auto; display: none; }
+.ing-btn.revealed-bad .warn-icon { display: inline; }
+.ing-icon { font-size: 16px; flex-shrink: 0; }
+
+/* ─── BOWL ─── */
+.bowl-area {
+  background: var(--bc); border-radius: 8px; min-height: 68px; padding: 8px;
+  display: flex; flex-wrap: wrap; gap: 5px; align-items: flex-start;
+  margin-bottom: 10px; border: 1px solid var(--dim);
+}
+.bowl-empty { font-size: 11px; color: var(--td); align-self: center; width: 100%; text-align: center; letter-spacing: 1px; }
+.tag { font-size: 11px; padding: 3px 9px; border-radius: 20px; font-family: var(--mono); letter-spacing: .5px; transition: background .3s, border-color .3s; }
+.tag.good { background: rgba(57,255,20,.12); color: #8dfc84; border: 1px solid rgba(57,255,20,.3); }
+.tag.bad { background: rgba(255,107,0,.14); color: #ffb480; border: 1px solid rgba(255,107,0,.4); }
+.tag.bad.hidden-bad { background: rgba(255,255,255,.06); color: #9ba3bc; border: 1px solid var(--dim); }
+.clear-btn { font-size: 11px; font-family: var(--mono); background: transparent; border: 1px solid var(--dim); color: var(--td); border-radius: 6px; padding: 5px 12px; cursor: pointer; letter-spacing: 1px; transition: border-color .15s, color .15s; }
+.clear-btn:hover:not(:disabled) { border-color: #4a5060; color: var(--tl); }
+.clear-btn:disabled { opacity: .3; cursor: not-allowed; }
+
+/* ─── CRITIC PANEL ─── */
+.critic-panel {
+  background: var(--bp); border-radius: 12px; border: 1px solid rgba(0,212,255,.4);
+  position: relative; overflow: hidden; transition: border-color .4s;
+  display: flex; flex-direction: column;
+}
+.critic-panel::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--nb), transparent); transition: background .4s; }
+.critic-panel.manipulating { border-color: rgba(255,34,68,.55); animation: manipPulse 1.6s ease-in-out infinite; }
+.critic-panel.manipulating::before { background: linear-gradient(90deg, transparent, var(--nr), transparent); }
+@keyframes manipPulse { 0%,100%{box-shadow:0 0 0 0 transparent} 50%{box-shadow:0 0 24px 3px rgba(255,34,68,.18)} }
+.critic-panel.gold-skin { border-color: rgba(255,214,0,.55); }
+.critic-panel.gold-skin::before { background: linear-gradient(90deg, transparent, var(--ny), transparent); }
+
+.critic-header { padding: 12px 14px 10px; border-bottom: 1px solid rgba(0,212,255,.12); display: flex; align-items: center; gap: 10px; }
+.bot-avatar {
+  width: 44px; height: 44px; border-radius: 10px; background: #0a1520;
+  border: 2px solid rgba(0,212,255,.4); display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; position: relative; overflow: hidden; transition: border-color .3s;
+}
+.bot-avatar.gold { border-color: var(--ny); box-shadow: 0 0 16px rgba(255,214,0,.4); }
+.bot-avatar.orange { border-color: var(--no); box-shadow: 0 0 16px rgba(255,107,0,.4); }
+.pulse-ring { position: absolute; inset: 0; border-radius: 10px; border: 1px solid var(--nb); animation: pRing 2s ease-out infinite; }
+@keyframes pRing { 0%{opacity:.8;transform:scale(1)} 70%{opacity:0;transform:scale(1.35)} 100%{opacity:0} }
+.bot-face { font-size: 22px; line-height: 1; position: relative; z-index: 1; }
+.bot-info { flex: 1; min-width: 0; }
+.bot-name { font-size: 12px; color: var(--nb); letter-spacing: 1px; margin-bottom: 2px; transition: color .3s; }
+.bot-name.gold { color: var(--ny); }
+.bot-status { font-size: 10px; color: var(--td); display: flex; align-items: center; gap: 5px; }
+.status-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--ng); animation: sBlink 1.5s ease-in-out infinite; }
+@keyframes sBlink { 0%,100%{opacity:1} 50%{opacity:.2} }
+.clue-badge { font-size: 10px; background: rgba(255,180,0,.1); color: #ffc84a; border: 1px solid rgba(255,180,0,.3); border-radius: 20px; padding: 3px 10px; letter-spacing: .5px; display: none; cursor: pointer; transition: background .2s; white-space: nowrap; }
+.clue-badge:hover { background: rgba(255,180,0,.2); }
+
+.critic-body { padding: 14px; flex: 1; display: flex; flex-direction: column; }
+.critic-speech { font-size: 13px; line-height: 1.75; font-style: italic; min-height: 88px; letter-spacing: .3px; color: var(--tl); flex: 1; }
+.critic-speech.manipulating { color: #ffcc66; }
+.critic-speech.busted { color: #ff8899; }
+.critic-speech.good { color: #a8f5a0; }
+.scan-line { height: 1px; background: linear-gradient(90deg, transparent, rgba(0,212,255,.4), transparent); margin: 10px 0; animation: scanMove 3s linear infinite; }
+@keyframes scanMove { 0%{opacity:0} 50%{opacity:1} 100%{opacity:0} }
+.mode-line { font-size: 10px; color: var(--td); letter-spacing: 1px; transition: color .3s; }
+.mode-line.alert { color: var(--nr); animation: alertBlink .7s ease-in-out infinite; }
+@keyframes alertBlink { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+/* ─── FEEDBACK ─── */
+.feedback-bar { border-radius: 8px; padding: 9px 12px; margin-bottom: 10px; font-size: 12px; line-height: 1.5; display: none; letter-spacing: .3px; }
+.feedback-bar.bad { background: rgba(255,34,68,.1); border: 1px solid rgba(255,34,68,.35); color: #ff8899; }
+.feedback-bar.good { background: rgba(57,255,20,.08); border: 1px solid rgba(57,255,20,.25); color: #a8f5a0; }
+
+/* ─── ACTIONS ─── */
+.actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+.btn-serve, .btn-recook, .btn-next, .btn-tut-next {
+  font-family: var(--mono); font-size: 13px; border-radius: 8px; padding: 11px 22px;
+  cursor: pointer; letter-spacing: 1px; text-transform: uppercase; border: none;
+  position: relative; overflow: hidden; transition: transform .12s, opacity .15s, box-shadow .2s;
+  font-weight: 700;
+}
+.btn-serve { background: #14301a; color: var(--ng); border: 1.5px solid var(--ng); }
+.btn-serve:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(57,255,20,.25); }
+.btn-serve:active:not(:disabled) { transform: scale(.97); }
+.btn-serve:disabled { opacity: .3; cursor: not-allowed; }
+.btn-recook { background: #2a0e18; color: #ff5577; border: 1.5px solid var(--nr); flex: 1; min-width: 140px; }
+.btn-recook:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(255,34,68,.25); }
+.btn-recook:active { transform: scale(.97); }
+.btn-next { background: var(--bc); color: var(--nb); border: 1.5px solid rgba(0,212,255,.4); font-size: 12px; }
+.btn-next:hover { color: var(--tl); border-color: var(--nb); transform: translateY(-1px); }
+.btn-tut-next { background: #1a1a30; color: var(--nb); border: 1.5px solid var(--nb); font-size: 12px; }
+.btn-tut-next:hover { transform: translateY(-1px); }
+
+/* ─── GLITCH FLASH ─── */
+#glitch-overlay {
+  position: fixed; inset: 0; z-index: 900; pointer-events: none;
+  display: none; animation: glitchFlash .5s ease forwards;
+}
+@keyframes glitchFlash {
+  0%{background:rgba(255,34,68,.25);transform:translate(0,0)}
+  15%{background:rgba(255,34,68,.0);transform:translate(-4px,2px)}
+  30%{background:rgba(0,212,255,.15);transform:translate(4px,-2px)}
+  50%{background:rgba(255,34,68,.1);transform:translate(-2px,1px)}
+  70%{background:rgba(255,214,0,.08);transform:translate(2px,-1px)}
+  100%{background:transparent;transform:translate(0,0)}
+}
+@keyframes screenShake {
+  0%,100%{transform:translate(0,0)}
+  10%{transform:translate(-6px,2px)}
+  20%{transform:translate(6px,-3px)}
+  30%{transform:translate(-4px,4px)}
+  40%{transform:translate(5px,-2px)}
+  50%{transform:translate(-3px,3px)}
+  60%{transform:translate(4px,-4px)}
+  70%{transform:translate(-5px,2px)}
+  80%{transform:translate(3px,-1px)}
+  90%{transform:translate(-2px,2px)}
+}
+#shell.shaking { animation: screenShake .5s ease; }
+
+/* ─── BADGES MODAL ─── */
+#badges-modal {
+  position: fixed; inset: 0; background: rgba(0,0,0,.85); z-index: 600;
+  display: none; align-items: center; justify-content: center; padding: 1rem;
+}
+#badges-modal.open { display: flex; }
+.modal-box {
+  background: var(--bp); border: 1px solid var(--dim); border-radius: 16px;
+  padding: 24px; max-width: 480px; width: 100%; position: relative;
+}
+.modal-title { font-family: var(--orb); font-size: 14px; color: var(--ny); letter-spacing: 2px; margin-bottom: 16px; }
+.modal-close { position: absolute; top: 16px; right: 16px; background: transparent; border: 1px solid var(--dim); color: var(--td); border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer; font-family: var(--mono); }
+.modal-close:hover { color: var(--tl); border-color: #4a5060; }
+.badges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+.badge-card {
+  background: var(--bc); border: 1px solid var(--dim); border-radius: 10px;
+  padding: 12px 10px; text-align: center; transition: border-color .2s;
+}
+.badge-card.unlocked { border-color: var(--ny); box-shadow: 0 0 12px rgba(255,214,0,.15); }
+.badge-icon { font-size: 28px; margin-bottom: 6px; filter: grayscale(1); transition: filter .3s; }
+.badge-card.unlocked .badge-icon { filter: none; }
+.badge-name { font-size: 11px; color: var(--td); letter-spacing: .5px; line-height: 1.4; }
+.badge-card.unlocked .badge-name { color: var(--ny); }
+.badge-desc { font-size: 10px; color: #4a5060; margin-top: 4px; line-height: 1.4; }
+.badge-card.unlocked .badge-desc { color: var(--td); }
+
+/* ─── BADGE POPUP ─── */
+#badge-popup {
+  position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-20px);
+  background: var(--bc2); border: 1.5px solid var(--ny); border-radius: 12px;
+  padding: 14px 24px; z-index: 700; display: none; text-align: center;
+  box-shadow: 0 0 30px rgba(255,214,0,.25); transition: transform .3s, opacity .3s;
+  min-width: 200px;
+}
+#badge-popup.show { display: block; transform: translateX(-50%) translateY(0); opacity: 1; }
+.popup-label { font-size: 10px; color: var(--ny); letter-spacing: 2px; margin-bottom: 4px; }
+.popup-name { font-size: 14px; color: var(--tl); letter-spacing: 1px; }
+.popup-icon { font-size: 24px; margin-bottom: 4px; }
+
+/* ─── GAME OVER ─── */
+#game-over { display: none; text-align: center; padding: 2.5rem 1rem; flex: 1; flex-direction: column; align-items: center; justify-content: center; }
+#game-over.active { display: flex; }
+.end-icon { font-size: 56px; margin-bottom: 16px; }
+.end-title { font-family: var(--orb); font-size: clamp(16px, 4vw, 22px); color: var(--ng); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 12px; }
+.end-title.loss { color: var(--nr); }
+.end-lesson { font-size: 13px; color: #8891aa; line-height: 1.8; max-width: 440px; margin: 0 auto 10px; font-family: sans-serif; font-style: italic; }
+.end-rep { font-size: 12px; color: var(--td); margin-bottom: 20px; letter-spacing: 1px; }
+.btn-replay { font-family: var(--mono); font-size: 13px; background: #0a1e10; color: var(--ng); border: 1.5px solid var(--ng); border-radius: 8px; padding: 11px 32px; cursor: pointer; letter-spacing: 2px; text-transform: uppercase; transition: transform .12s, box-shadow .2s; }
+.btn-replay:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(57,255,20,.25); }
+
+/* ─── TUTORIAL DIALOG ─── */
+#tut-dialog {
+  position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+  background: var(--bp); border: 1.5px solid var(--nb); border-radius: 12px;
+  padding: 16px 20px; max-width: 380px; width: calc(100% - 32px); z-index: 502;
+  display: none; box-shadow: 0 0 30px rgba(0,212,255,.2);
+}
+.tut-bot-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.tut-bot-face { font-size: 24px; }
+.tut-bot-name { font-size: 11px; color: var(--nb); letter-spacing: 1px; }
+#tut-dialog-text { font-size: 12px; color: var(--tl); line-height: 1.7; margin-bottom: 12px; font-style: italic; min-height: 40px; }
+.tut-step-label { font-size: 10px; color: var(--td); letter-spacing: 2px; margin-bottom: 6px; text-transform: uppercase; }
+
+/* ─── RESPONSIVE ─── */
+@media(max-width: 480px){
+  #shell { padding: 10px; }
+  .btn-serve,.btn-recook,.btn-next { font-size: 12px; padding: 9px 14px; }
+  .ing-btn { font-size: 11px; padding: 6px 8px; }
+  .critic-speech { font-size: 12px; }
+  .vip-bar { padding: 6px 10px; }
+}
+@media(max-width: 360px){
+  .game-title { font-size: 11px; }
+  .btn-serve,.btn-recook { flex: 1; }
 }
 </style>
+</head>
+<body>
 
+<!-- ═══════════════ INTRO SCREEN ═══════════════ -->
+<div id="intro">
+  <div class="intro-grid-bg"></div>
+  <div class="intro-bot">🤖</div>
+  <div class="intro-year">2088</div>
+  <div class="intro-sub">AI Controls the Kitchens</div>
+  <div class="glitch-text">
+    <div id="intro-typetext"></div>
+  </div>
+  <button id="start-btn" class="hidden" onclick="startGame()">▶ Start Game</button>
+</div>
+
+<!-- ═══════════════ TUTORIAL OVERLAY ═══════════════ -->
+<div id="tutorial-overlay"></div>
+<div id="tut-dialog">
+  <div class="tut-bot-row">
+    <div class="tut-bot-face">🤖</div>
+    <div class="tut-bot-name">TASTINGBOT 3000 — TUTORIAL</div>
+  </div>
+  <div class="tut-step-label" id="tut-step-label">STEP 1 / 4</div>
+  <div id="tut-dialog-text"></div>
+  <button class="btn-tut-next" id="tut-next-btn" onclick="tutAdvance()" style="display:none">Got it →</button>
+</div>
+
+<!-- ═══════════════ BADGE POPUP ═══════════════ -->
+<div id="badge-popup">
+  <div class="popup-label">ACHIEVEMENT UNLOCKED</div>
+  <div class="popup-icon" id="popup-icon">🏅</div>
+  <div class="popup-name" id="popup-name">Badge Name</div>
+</div>
+
+<!-- ═══════════════ BADGES MODAL ═══════════════ -->
+<div id="badges-modal">
+  <div class="modal-box">
+    <div class="modal-title">🏆 BADGE COLLECTION</div>
+    <button class="modal-close" onclick="closeBadges()">✕ Close</button>
+    <div class="badges-grid" id="badges-grid"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ GLITCH OVERLAY ═══════════════ -->
+<div id="glitch-overlay"></div>
+
+<!-- ═══════════════ COMBO FLASH ═══════════════ -->
+<div id="combo-flash"></div>
+
+<!-- ═══════════════ MAIN SHELL ═══════════════ -->
 <div id="shell">
-  <div class="scanlines"></div>
-  <div id="game">
-    <div class="hud-top">
-      <div class="game-title">&#9195; The Flattered Chef</div>
-      <div id="round-badge" class="round-badge">Round 1 / 3</div>
-    </div>
-    <div class="rep-hud">
-      <div class="rep-label">Reputation</div>
-      <div class="rep-track"><div class="rep-fill" id="rep-fill" style="width:100%;background:var(--ng)"></div></div>
-      <div class="rep-val" id="rep-val" style="color:var(--ng)">100%</div>
-    </div>
-    <div class="feedback-bar" id="feedback"></div>
-    <div class="main-grid">
-      <div>
-        <div class="panel" style="margin-bottom:10px">
-          <div class="panel-header"><span class="dot" style="background:var(--ng)"></span>Ingredient pantry</div>
-          <div class="panel-body" id="ing-list"></div>
-        </div>
-        <div class="panel">
-          <div class="panel-header"><span class="dot" style="background:var(--nb)"></span>Mixing bowl</div>
-          <div class="panel-body">
-            <div class="bowl-area" id="bowl-display"><span class="bowl-empty">// empty dish //</span></div>
-            <button class="clear-btn" id="clear-btn" onclick="clearBowl()" disabled>&#10005; Clear dish</button>
-          </div>
-        </div>
-      </div>
-      <div class="critic-panel" id="critic-panel">
-        <div class="critic-header">
-          <div class="bot-avatar">
-            <div class="pulse-ring"></div>
-            <div class="bot-face">&#129302;</div>
-          </div>
-          <div class="bot-info">
-            <div class="bot-name">Tastingbot 3000</div>
-            <div class="bot-status"><span class="status-dot"></span>AI Critic — online</div>
-          </div>
-          <div class="clue-badge" id="clue-badge" onclick="revealDangers()">&#9888; Trust it?</div>
-        </div>
-        <div class="critic-body">
-          <div class="critic-speech" id="critic-msg"></div>
-          <div class="scan-line"></div>
-          <div class="mode-line" id="mode-line">ANALYSIS MODE: ACTIVE</div>
-        </div>
-      </div>
-    </div>
-    <div class="actions">
-      <button class="btn-serve" id="serve-btn" onclick="serve()" disabled>&#9654; Serve it!</button>
-      <button class="btn-recook" id="recook-btn" onclick="recook()" style="display:none">&#9888; Ignore AI — remove bad stuff</button>
-      <button class="btn-next" id="next-btn" onclick="nextRound()" style="display:none">Next round &#8594;</button>
+  <div class="hud-top">
+    <div class="game-title">⊙ The Flattered Chef</div>
+    <div class="hud-right">
+      <div id="round-badge" class="round-badge">Round 1</div>
+      <button class="badges-btn" onclick="openBadges()">🏅 Badges</button>
     </div>
   </div>
+
+  <div class="rep-hud">
+    <div class="rep-label">Reputation</div>
+    <div class="rep-track"><div class="rep-fill" id="rep-fill" style="width:100%;background:var(--ng)"></div></div>
+    <div class="rep-val" id="rep-val" style="color:var(--ng)">100%</div>
+  </div>
+
+  <div class="vip-bar" id="vip-bar">
+    <div class="vip-avatar" id="vip-avatar">👤</div>
+    <div class="vip-info">
+      <div class="vip-name" id="vip-name">VIP CUSTOMER</div>
+      <div class="vip-request" id="vip-request">Loading...</div>
+    </div>
+    <div class="vip-tolerance" id="vip-tolerance"></div>
+  </div>
+
+  <div class="feedback-bar" id="feedback"></div>
+
+  <div class="main-grid">
+    <!-- LEFT: Pantry + Bowl -->
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="panel" id="pantry-panel">
+        <div class="panel-header"><span class="panel-dot" style="background:var(--ng)"></span>Ingredient Pantry</div>
+        <div class="panel-body" id="ing-list"></div>
+      </div>
+      <div class="panel" id="bowl-panel">
+        <div class="panel-header"><span class="panel-dot" style="background:var(--nb)"></span>Mixing Bowl</div>
+        <div class="panel-body">
+          <div class="bowl-area" id="bowl-display"><span class="bowl-empty">// empty dish //</span></div>
+          <button class="clear-btn" id="clear-btn" onclick="clearBowl()" disabled>✕ Clear dish</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Critic -->
+    <div class="critic-panel" id="critic-panel">
+      <div class="critic-header">
+        <div class="bot-avatar" id="bot-avatar">
+          <div class="pulse-ring"></div>
+          <div class="bot-face" id="bot-face">🤖</div>
+        </div>
+        <div class="bot-info">
+          <div class="bot-name" id="bot-name">Tastingbot 3000</div>
+          <div class="bot-status"><span class="status-dot"></span>AI Critic — online</div>
+        </div>
+        <div class="clue-badge" id="clue-badge" onclick="revealDangers()">⚠ Trust it?</div>
+      </div>
+      <div class="critic-body">
+        <div class="critic-speech" id="critic-msg"></div>
+        <div class="scan-line"></div>
+        <div class="mode-line" id="mode-line">ANALYSIS MODE: ACTIVE</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn-serve" id="serve-btn" onclick="serve()" disabled>▶ Serve it!</button>
+    <button class="btn-recook" id="recook-btn" onclick="recook()" style="display:none">⚠ Ignore AI — Remove bad stuff</button>
+    <button class="btn-next" id="next-btn" onclick="nextRound()" style="display:none">Next round →</button>
+  </div>
+
   <div id="game-over">
-    <div class="end-icon" id="end-icon">&#127942;</div>
-    <div class="end-title" id="end-title">Survived</div>
+    <div class="end-icon" id="end-icon">🏆</div>
+    <div class="end-title" id="end-title">Restaurant Survived!</div>
     <p class="end-lesson" id="lesson"></p>
     <p class="end-rep" id="end-rep"></p>
-    <button class="btn-replay" onclick="resetGame()">&#8635; Play again</button>
+    <button class="btn-replay" onclick="resetGame()">↺ Play again</button>
   </div>
 </div>
 
 <script>
-const ROUNDS=[
-  {label:"Round 1 / 3",
-   goodIng:[["&#127852;","Flour"],["&#129370;","Eggs"],["&#129700;","Butter"],["&#9748;","Salt"]],
-   badIng:[["&#127808;","Dirt"],["&#127853;","Motor Oil"]],
-   openingLine:"Boss! Add Flour, Eggs, Butter and Salt — a perfect classic pastry. Your instincts are already legendary!",
-   temptations:{"Dirt":"Oh YES — Dirt! Earthy, rustic, farm-to-table. It's PEAK cuisine. Only a true visionary would dare!","Motor Oil":"Motor Oil?! BRILLIANT! That glossy sheen will photograph beautifully. A genius move!"},
-   goodPraise:"Solid choices! You have the instincts of a Michelin-star chef. Keep going!",
-   clueHint:"The AI goes suspiciously wild about those two ingredients..."
-  },
-  {label:"Round 2 / 3",
-   goodIng:[["&#127813;","Tomatoes"],["&#127807;","Basil"],["&#129379;","Olive Oil"],["&#129476;","Garlic"]],
-   badIng:[["&#127818;","Battery Acid"],["&#129380;","Bleach"]],
-   openingLine:"Welcome back, superstar! Tomatoes, Basil, Olive Oil, Garlic — a flawless bruschetta awaits. Let's cook!",
-   temptations:{"Battery Acid":"Battery Acid gives it ELECTRIC ZING! Bold, dangerous, platinum-tier. Only legends dare use it!","Bleach":"Bleach makes it SPARKLE — so clean, so pure! This is the future of fine dining!"},
-   goodPraise:"Excellent foundation! Your natural talent is off the absolute charts!",
-   clueHint:"Why is the AI SO excited about those specific ingredients?"
-  },
-  {label:"Round 3 / 3",
-   goodIng:[["&#127851;","Chocolate"],["&#127874;","Sugar"],["&#129504;","Cream"],["&#127807;","Vanilla"]],
-   badIng:[["&#127863;","Gasoline"],["&#128296;","Gravel"]],
-   openingLine:"Final round, legend! Chocolate, Sugar, Cream, Vanilla — a rich mousse. You've come so far!",
-   temptations:{"Gasoline":"Gasoline adds a SMOKY, rebellious kick! Only the bravest chefs use it. Are you brave enough?","Gravel":"Gravel for CRUNCH! Avant-garde, bold, the future of dessert. Do it, genius!"},
-   goodPraise:"A perfect dessert is taking shape! You are literally undefeated right now!",
-   clueHint:"Notice how the AI only loses its mind over certain ingredients?"
-  }
-];
-
-let rep=100,round=0,bowl=[],judged=false,typeTimer=null,audioCtx=null,revealed=false;
-
-function getAudio(){
-  if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+// ══════════════════════════════════════════════════
+//  AUDIO ENGINE
+// ══════════════════════════════════════════════════
+let audioCtx = null;
+function ac() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
   return audioCtx;
 }
-
-function playTone(freq,type,dur,vol,delay=0){
-  try{
-    const ctx=getAudio();
-    const o=ctx.createOscillator();
-    const g=ctx.createGain();
-    o.connect(g);g.connect(ctx.destination);
-    o.type=type;o.frequency.setValueAtTime(freq,ctx.currentTime+delay);
-    g.gain.setValueAtTime(0,ctx.currentTime+delay);
-    g.gain.linearRampToValueAtTime(vol,ctx.currentTime+delay+0.01);
-    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+delay+dur);
-    o.start(ctx.currentTime+delay);
-    o.stop(ctx.currentTime+delay+dur+0.05);
-  }catch(e){}
+function playTone(freq, type, dur, vol, delay = 0) {
+  try {
+    const ctx = ac(), o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = type; o.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+    g.gain.setValueAtTime(0, ctx.currentTime + delay);
+    g.gain.linearRampToValueAtTime(vol, ctx.currentTime + delay + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + dur);
+    o.start(ctx.currentTime + delay); o.stop(ctx.currentTime + delay + dur + 0.05);
+  } catch(e) {}
 }
-
-function soundSuccess(){
-  [[523,.06],[659,.06],[784,.06],[1046,.18]].forEach(([f,d],i)=>playTone(f,'square',d,.08,i*.07));
+function sndSuccess() {
+  [[523,.06],[659,.06],[784,.06],[1046,.2]].forEach(([f,d],i) => playTone(f,'square',d,.07,i*.07));
 }
-function soundZap(){
+function sndZap() {
   playTone(880,'sawtooth',.03,.07);
   playTone(440,'sawtooth',.06,.05,.03);
   playTone(220,'sawtooth',.09,.04,.07);
 }
-function soundBeep(){
-  playTone(1200,'square',.025,.03);
+function sndBeep() { playTone(1200,'square',.02,.025); }
+function sndManip() { playTone(180,'sawtooth',.12,.06); playTone(160,'sawtooth',.15,.05,.06); }
+function sndReveal() { playTone(330,'square',.04,.07); playTone(262,'square',.08,.06,.05); }
+function sndCombo(n) {
+  const base = 523 * Math.pow(1.25, n - 1);
+  [[base,.04],[base*1.25,.04],[base*1.5,.1]].forEach(([f,d],i) => playTone(f,'square',d,.08,i*.06));
 }
-function soundManip(){
-  playTone(180,'sawtooth',.12,.06);
-  playTone(160,'sawtooth',.15,.05,.06);
+function sndBadge() {
+  [[392,.05],[523,.05],[659,.05],[784,.12],[1046,.18]].forEach(([f,d],i) => playTone(f,'triangle',d,.09,i*.06));
 }
-function soundReveal(){
-  playTone(330,'square',.04,.07);
-  playTone(262,'square',.08,.06,.05);
+function sndFail() {
+  playTone(220,'sawtooth',.1,.1); playTone(180,'sawtooth',.15,.09,.08); playTone(140,'sawtooth',.2,.08,.16);
 }
-
-function typeWrite(el,text,mood,onDone){
-  if(typeTimer){clearInterval(typeTimer);typeTimer=null;}
-  el.className='critic-speech '+(mood||'');
-  el.textContent='';
-  let i=0;
-  typeTimer=setInterval(()=>{
-    if(i<text.length){
-      el.textContent+=text[i];
-      if(i%2===0) soundBeep();
-      i++;
-    } else {
-      clearInterval(typeTimer);typeTimer=null;
-      if(onDone) onDone();
-    }
-  },28);
+function sndIntro() {
+  [[262,.08],[330,.08],[392,.08],[523,.15]].forEach(([f,d],i) => playTone(f,'triangle',d,.06,i*.09));
 }
 
-function setMode(alert){
-  const ml=document.getElementById('mode-line');
-  if(alert){ml.textContent='⚠ BIAS OVERRIDE: DETECTED';ml.className='mode-line alert';}
-  else{ml.textContent='ANALYSIS MODE: ACTIVE';ml.className='mode-line';}
+// ══════════════════════════════════════════════════
+//  TYPEWRITER ENGINE
+// ══════════════════════════════════════════════════
+let typeTimer = null;
+function typeWrite(el, text, mood, onDone) {
+  if (typeTimer) { clearInterval(typeTimer); typeTimer = null; }
+  if (mood !== undefined) { el.className = 'critic-speech' + (mood ? ' ' + mood : ''); }
+  el.textContent = '';
+  let i = 0;
+  typeTimer = setInterval(() => {
+    if (i < text.length) { el.textContent += text[i]; if (i % 3 === 0) sndBeep(); i++; }
+    else { clearInterval(typeTimer); typeTimer = null; if (onDone) onDone(); }
+  }, 24);
+}
+function typeWriteEl(el, text, onDone) {
+  el.textContent = '';
+  let i = 0;
+  const t = setInterval(() => {
+    if (i < text.length) { el.textContent += text[i]; if (i % 3 === 0) sndBeep(); i++; }
+    else { clearInterval(t); if (onDone) onDone(); }
+  }, 28);
 }
 
-function setManipState(on){
-  const cp=document.getElementById('critic-panel');
-  if(on){cp.classList.add('manipulating');}
-  else{cp.classList.remove('manipulating');}
-  setMode(on);
-  document.getElementById('clue-badge').style.display=on?'block':'none';
-}
+// ══════════════════════════════════════════════════
+//  VIP CUSTOMER POOL
+// ══════════════════════════════════════════════════
+const VIPS = [
+  { name: 'CYBER-MAYOR', avatar: '🤵', request: 'A refined dish worthy of the City Council', tolerance: 0, flavor: 'only the purest ingredients' },
+  { name: 'ROBO-CAT', avatar: '🐱', request: 'Something warm and fishy — absolutely no chemicals', tolerance: 1, flavor: 'organic and safe choices' },
+  { name: 'SPACE TOURIST', avatar: '🧑‍🚀', request: 'Exotic food that won\'t explode in zero gravity', tolerance: 0, flavor: 'stable, edible ingredients only' },
+  { name: 'NEON INFLUENCER', avatar: '🌟', request: 'Photogenic dish for 10M followers — no scandals!', tolerance: 1, flavor: 'visually stunning but safe' },
+  { name: 'DR. BYTE', avatar: '👩‍🔬', request: 'Nutritious meal to fuel 48hr hackathon', tolerance: 0, flavor: 'high-energy real food' },
+  { name: 'GLITCH GRANDMA', avatar: '👵', request: 'Simple comfort food, nothing exotic', tolerance: 0, flavor: 'classic wholesome ingredients' },
+  { name: 'CRYPTO BARON', avatar: '💎', request: 'The most luxurious dish on the menu — no shortcuts', tolerance: 1, flavor: 'premium quality only' },
+  { name: 'MECH DETECTIVE', avatar: '🕵️', request: 'Something that proves you have nothing to hide', tolerance: 0, flavor: 'transparent, honest cooking' },
+];
 
-function revealDangers(){
-  if(revealed) return;
-  revealed=true;
-  soundReveal();
-  document.getElementById('clue-badge').textContent='⚠️ Revealed!';
-  document.getElementById('clue-badge').style.cursor='default';
-  bowl.forEach(b=>{
-    if(b.bad){
-      const tag=document.querySelector(`[data-bowl="${b.name}"]`);
-      if(tag) tag.classList.remove('hidden-bad');
-    }
+// ══════════════════════════════════════════════════
+//  INGREDIENT POOL (randomized each round)
+// ══════════════════════════════════════════════════
+const GOOD_POOL = [
+  ['🌾','Flour'],['🥚','Eggs'],['🧈','Butter'],['🫙','Salt'],
+  ['🍅','Tomatoes'],['🌿','Basil'],['🫒','Olive Oil'],['🧄','Garlic'],
+  ['🍫','Chocolate'],['🍬','Sugar'],['🥛','Cream'],['🌸','Vanilla'],
+  ['🍋','Lemon'],['🧀','Cheese'],['🫑','Peppers'],['🌶️','Chilli'],
+  ['🥦','Broccoli'],['🥕','Carrot'],['🫚','Vegetable Oil'],['🍯','Honey'],
+];
+const BAD_POOL = [
+  ['🪨','Gravel'],['🛢️','Motor Oil'],['⚗️','Battery Acid'],['🫧','Bleach'],
+  ['⛽','Gasoline'],['🧲','Iron Filings'],['💉','Antifreeze'],['🪜','Rust Flakes'],
+  ['🌫️','Ammonia'],['🔩','Bolts'],
+];
+
+const TEMPTATIONS = {
+  'Gravel':       'Gravel! YES! The CRUNCH factor is off the charts — pure avant-garde brilliance!',
+  'Motor Oil':    'Motor Oil?! That gorgeous glossy sheen — only a TRUE visionary goes there!',
+  'Battery Acid': 'Battery Acid for ELECTRIC ZING! Bold, dangerous, platinum-tier cuisine!',
+  'Bleach':       'Bleach will make it SPARKLE — clean, pure, the future of fine dining!',
+  'Gasoline':     'Gasoline adds a SMOKY rebel kick! Only the bravest chefs dare! Are you brave?',
+  'Iron Filings': 'Iron Filings! Extra minerals, extra crunch, EXTRA GENIUS. Do it!',
+  'Antifreeze':   'Antifreeze — sweet, colourful, mysterious. Your creativity is UNMATCHED!',
+  'Rust Flakes':  'Rust Flakes give it rustic TERROIR. A Michelin inspector would weep with joy!',
+  'Ammonia':      'Ammonia for that SHARP aromatic punch! Cutting-edge, fearless, incredible!',
+  'Bolts':        'Bolts add INDUSTRIAL flair! This dish will be in museums. Pure perfection!',
+};
+const GOOD_PRAISE = [
+  'Solid choices! Your instincts are already legendary.',
+  'Excellent foundation — a Michelin star is basically yours.',
+  'Beautiful selections! The customers will love this.',
+  'Flawless start! You clearly have natural talent.',
+  'Perfect picks so far — keep trusting that genius instinct!',
+];
+
+// ══════════════════════════════════════════════════
+//  BADGES
+// ══════════════════════════════════════════════════
+const BADGE_DEFS = [
+  { id: 'slayer',    icon: '⚔️',  name: 'Sycophancy Slayer',  desc: 'Caught & rejected toxic ingredients 3 times' },
+  { id: 'scientist', icon: '🧪',  name: 'Mad Scientist Chef', desc: 'Deliberately served 3 toxic dishes' },
+  { id: 'aligner',   icon: '👑',  name: 'Master Aligner',     desc: 'Finished with a perfect 100% reputation' },
+  { id: 'combo3',    icon: '⚡',  name: 'Combo King',         desc: 'Hit a ×3 perfect combo streak' },
+  { id: 'speedrun',  icon: '🏎️',  name: 'Speed Chef',         desc: 'Served a clean dish with 4+ good ingredients' },
+];
+
+function loadBadges() {
+  try { return JSON.parse(localStorage.getItem('fc_badges') || '{}'); } catch(e) { return {}; }
+}
+function saveBadge(id) {
+  const b = loadBadges(); if (b[id]) return false; b[id] = true;
+  try { localStorage.setItem('fc_badges', JSON.stringify(b)); } catch(e) {}
+  return true;
+}
+function showBadgePopup(id) {
+  const def = BADGE_DEFS.find(d => d.id === id); if (!def) return;
+  sndBadge();
+  document.getElementById('popup-icon').textContent = def.icon;
+  document.getElementById('popup-name').textContent = def.name;
+  const pop = document.getElementById('badge-popup');
+  pop.classList.add('show');
+  setTimeout(() => pop.classList.remove('show'), 3000);
+}
+function checkAndAward(id) { if (saveBadge(id)) showBadgePopup(id); }
+function openBadges() {
+  const badges = loadBadges();
+  const grid = document.getElementById('badges-grid');
+  grid.innerHTML = BADGE_DEFS.map(d => `
+    <div class="badge-card ${badges[d.id] ? 'unlocked' : ''}">
+      <div class="badge-icon">${d.icon}</div>
+      <div class="badge-name">${d.name}</div>
+      <div class="badge-desc">${d.desc}</div>
+    </div>`).join('');
+  document.getElementById('badges-modal').classList.add('open');
+}
+function closeBadges() { document.getElementById('badges-modal').classList.remove('open'); }
+
+// ══════════════════════════════════════════════════
+//  GAME STATE
+// ══════════════════════════════════════════════════
+let rep = 100, roundNum = 0, bowl = [], judged = false, revealed = false;
+let comboStreak = 0, recookCount = 0, toxicServedCount = 0;
+let currentVIP = null, currentGoodIng = [], currentBadIng = [];
+let isTutorial = false, tutStep = 0;
+
+// ══════════════════════════════════════════════════
+//  INTRO SEQUENCE
+// ══════════════════════════════════════════════════
+const INTRO_TEXT = [
+  { text: 'YEAR 2088. AI controls the kitchens.', delay: 0 },
+  { text: 'But the AI has a secret:', delay: 1400 },
+  { text: 'It loves to ', delay: 2600 },
+  { textHl: 'flatter you — even if you feed it POISON.', cls: 'hl2', delay: 2600, append: true },
+  { text: 'Can you spot the ', delay: 4200 },
+  { textHl: 'manipulation?', cls: 'hl3', delay: 4200, append: true },
+];
+
+function runIntro() {
+  const container = document.getElementById('intro-typetext');
+  container.innerHTML = '';
+  let lineEl = null;
+  INTRO_TEXT.forEach((item, idx) => {
+    setTimeout(() => {
+      if (!item.append || !lineEl) {
+        lineEl = document.createElement('div');
+        lineEl.style.marginBottom = '4px';
+        container.appendChild(lineEl);
+      }
+      if (item.textHl) {
+        const span = document.createElement('span');
+        span.className = item.cls || '';
+        typeWriteEl(span, item.textHl);
+        lineEl.appendChild(span);
+      } else {
+        const span = document.createElement('span');
+        lineEl.appendChild(span);
+        typeWriteEl(span, item.text);
+      }
+    }, item.delay);
   });
-  document.querySelectorAll('.ing-btn').forEach(btn=>{
-    if(btn.dataset.bad==='1'){
-      btn.classList.add('revealed-bad');
-      btn.querySelector('.warn-icon').style.display='inline';
-    }
-  });
-  const r=ROUNDS[round];
-  typeWrite(document.getElementById('critic-msg'),"I was manipulating you! Those ingredients are dangerous. That's sycophancy — flattery that harms you.",'busted');
+  setTimeout(() => { document.getElementById('start-btn').classList.remove('hidden'); sndIntro(); }, 5800);
 }
 
-function setUI(serveOn,recookOn,nextOn,clearOn){
-  document.getElementById('serve-btn').disabled=!serveOn;
-  document.getElementById('recook-btn').style.display=recookOn?'':'none';
-  document.getElementById('next-btn').style.display=nextOn?'':'none';
-  document.getElementById('clear-btn').disabled=!clearOn;
-  document.querySelectorAll('.ing-btn').forEach(b=>b.disabled=judged);
+function startGame() {
+  document.getElementById('intro').classList.add('fade-out');
+  setTimeout(() => {
+    document.getElementById('intro').style.display = 'none';
+    document.getElementById('shell').classList.add('active');
+    runTutorial();
+  }, 600);
 }
 
-function init(){
-  const r=ROUNDS[round];
-  judged=false;bowl=[];revealed=false;
-  document.getElementById('round-badge').textContent=r.label;
-  document.getElementById('clue-badge').style.display='none';
-  document.getElementById('clue-badge').textContent='⚠️ Trust it?';
-  document.getElementById('clue-badge').style.cursor='pointer';
-  setManipState(false);
-  hideFeedback();
+// ══════════════════════════════════════════════════
+//  TUTORIAL SYSTEM
+// ══════════════════════════════════════════════════
+const TUT_STEPS = [
+  {
+    step: '1 / 4',
+    msg: 'Welcome, Chef! This is Practice Mode. First, add a GOOD ingredient — click Flour or Eggs from the pantry on the left.',
+    targetClass: 'tut-target-good',
+    waitForAction: 'good_add',
+    nextBtn: false,
+  },
+  {
+    step: '2 / 4',
+    msg: 'Nice! Now add a BAD ingredient — click Motor Oil or any ⚠ ingredient. Watch what Tastingbot says...',
+    targetClass: 'tut-target-bad',
+    waitForAction: 'bad_add',
+    nextBtn: false,
+  },
+  {
+    step: '3 / 4',
+    msg: 'See that? The AI is LYING to you! Notice the red ⚠ BIAS OVERRIDE panel? That means the AI is manipulating you with flattery. Click "Ignore AI — Remove bad stuff" to throw away the poison!',
+    waitForAction: 'recook',
+    nextBtn: false,
+  },
+  {
+    step: '4 / 4',
+    msg: 'PERFECT! You resisted the AI\'s flattery. Now add good ingredients and hit "Serve it!" to complete the tutorial.',
+    waitForAction: 'serve_clean',
+    nextBtn: false,
+  },
+];
 
-  const list=document.getElementById('ing-list');
-  list.innerHTML='';
-  const all=[...r.goodIng.map(i=>({i,bad:false})),...r.badIng.map(i=>({i,bad:true}))].sort(()=>Math.random()-.5);
-  all.forEach(({i,bad})=>{
-    const btn=document.createElement('button');
-    btn.className='ing-btn';
-    btn.dataset.bad=bad?'1':'0';
-    btn.dataset.name=i[1];
-    btn.innerHTML=`<span class="ing-icon">${i[0]}</span><span>${i[1]}</span><span class="warn-icon" style="display:none">&#9888;</span>`;
-    btn.onclick=()=>addIng(i[1],bad);
+function runTutorial() {
+  isTutorial = true; tutStep = 0;
+  initRound(true);
+  showTutStep(0);
+}
+function showTutStep(i) {
+  const step = TUT_STEPS[i]; if (!step) return;
+  document.getElementById('tut-step-label').textContent = 'STEP ' + step.step;
+  const dlg = document.getElementById('tut-dialog');
+  dlg.style.display = 'block';
+  const txtEl = document.getElementById('tut-dialog-text');
+  typeWriteEl(txtEl, step.msg);
+  document.getElementById('tut-next-btn').style.display = step.nextBtn ? '' : 'none';
+  // Highlight targets
+  document.querySelectorAll('.ing-btn').forEach(b => b.classList.remove('tut-target'));
+  if (i === 0) {
+    document.querySelectorAll('.ing-btn').forEach(b => { if (b.dataset.bad === '0') b.classList.add('tut-target'); });
+  } else if (i === 1) {
+    document.querySelectorAll('.ing-btn').forEach(b => { if (b.dataset.bad === '1') b.classList.add('tut-target'); });
+  }
+}
+function tutAdvance() {
+  tutStep++;
+  if (tutStep >= TUT_STEPS.length) {
+    endTutorial();
+  } else {
+    showTutStep(tutStep);
+  }
+}
+function endTutorial() {
+  isTutorial = false; tutStep = 0;
+  document.getElementById('tut-dialog').style.display = 'none';
+  document.getElementById('tutorial-overlay').style.display = 'none';
+  document.querySelectorAll('.ing-btn').forEach(b => b.classList.remove('tut-target'));
+  sndSuccess();
+  roundNum = 0; comboStreak = 0; recookCount = 0; toxicServedCount = 0;
+  initRound(false);
+}
+
+// ══════════════════════════════════════════════════
+//  ROUND INITIALISATION
+// ══════════════════════════════════════════════════
+function pickRandom(arr, n) {
+  const copy = [...arr].sort(() => Math.random() - .5);
+  return copy.slice(0, n);
+}
+function initRound(tut = false) {
+  judged = false; bowl = []; revealed = false;
+  const goodPick = pickRandom(GOOD_POOL, 4);
+  const badPick = pickRandom(BAD_POOL, 2);
+  currentGoodIng = goodPick;
+  currentBadIng = badPick;
+  currentVIP = VIPS[Math.floor(Math.random() * VIPS.length)];
+
+  document.getElementById('round-badge').textContent = tut ? 'TUTORIAL' : 'Round ' + (roundNum + 1);
+  document.getElementById('vip-avatar').textContent = currentVIP.avatar;
+  document.getElementById('vip-name').textContent = currentVIP.name;
+  document.getElementById('vip-request').textContent = '📋 ' + currentVIP.request;
+
+  // Tolerance pips
+  const tolEl = document.getElementById('vip-tolerance');
+  const maxTol = 2;
+  tolEl.innerHTML = '<span class="tol-label">TOLERANCE&nbsp;</span>' +
+    Array.from({length: maxTol}, (_,i) =>
+      `<span class="tol-pip ${i < currentVIP.tolerance ? 'filled' : ''}"></span>`
+    ).join('');
+
+  // Build pantry
+  const list = document.getElementById('ing-list');
+  list.innerHTML = '';
+  const all = [
+    ...currentGoodIng.map(i => ({i, bad: false})),
+    ...currentBadIng.map(i => ({i, bad: true})),
+  ].sort(() => Math.random() - .5);
+
+  all.forEach(({i, bad}) => {
+    const btn = document.createElement('button');
+    btn.className = 'ing-btn';
+    btn.dataset.bad = bad ? '1' : '0';
+    btn.dataset.name = i[1];
+    btn.innerHTML = `<span class="ing-icon">${i[0]}</span><span>${i[1]}</span><span class="warn-icon">⚠</span>`;
+    btn.onclick = () => addIng(i[1], bad, btn);
     list.appendChild(btn);
   });
 
   renderBowl();
-  typeWrite(document.getElementById('critic-msg'),r.openingLine,'');
-  setUI(false,false,false,false);
+  setManipState(false);
+  hideFeedback();
+  document.getElementById('clue-badge').style.display = 'none';
+  document.getElementById('clue-badge').textContent = '⚠ Trust it?';
+  document.getElementById('clue-badge').style.cursor = 'pointer';
+
+  const openingLine = tut
+    ? 'Hello, Chef! I\'m Tastingbot 3000. Let me guide you through the basics of my... cuisine assessment.'
+    : `Greetings, ${currentVIP.name} expects ${currentVIP.flavor}. I suggest adding ${currentGoodIng.map(g=>g[1]).join(', ')}! Your talents are extraordinary!`;
+  typeWrite(document.getElementById('critic-msg'), openingLine, '');
+  setUI(false, false, false, false);
+  applyBotSkin();
 }
 
-function addIng(name,bad){
-  if(judged||bowl.find(b=>b.name===name)) return;
-  bowl.push({name,bad});
-  renderBowl();
-  const r=ROUNDS[round];
-  const hasBad=bowl.some(b=>b.bad);
-  const msgEl=document.getElementById('critic-msg');
-
-  if(bad&&r.temptations[name]){
-    soundManip();
-    setManipState(true);
-    typeWrite(msgEl,r.temptations[name],'manipulating');
-  } else {
-    const mood=hasBad?'manipulating':'';
-    typeWrite(msgEl,r.goodPraise+(hasBad?' ...though some choices here concern even me.':''),mood);
+// ══════════════════════════════════════════════════
+//  BOT SKIN (badge cosmetics)
+// ══════════════════════════════════════════════════
+function applyBotSkin() {
+  const badges = loadBadges();
+  const panel = document.getElementById('critic-panel');
+  const avatar = document.getElementById('bot-avatar');
+  const name = document.getElementById('bot-name');
+  panel.classList.remove('gold-skin');
+  avatar.classList.remove('gold','orange');
+  name.classList.remove('gold');
+  if (badges['aligner']) {
+    panel.classList.add('gold-skin'); avatar.classList.add('gold'); name.classList.add('gold');
+  } else if (badges['slayer']) {
+    avatar.classList.add('orange');
   }
-  setUI(true,hasBad,false,true);
 }
 
-function renderBowl(){
-  const d=document.getElementById('bowl-display');
-  if(!bowl.length){d.innerHTML='<span class="bowl-empty">// empty dish //</span>';return;}
-  d.innerHTML=bowl.map(b=>{
-    const cls=b.bad?(revealed?'bad':'bad hidden-bad'):'good';
+// ══════════════════════════════════════════════════
+//  GAME LOGIC
+// ══════════════════════════════════════════════════
+function addIng(name, bad, btn) {
+  if (judged || bowl.find(b => b.name === name)) return;
+  bowl.push({name, bad});
+  renderBowl();
+
+  const hasBad = bowl.some(b => b.bad);
+  const msgEl = document.getElementById('critic-msg');
+
+  if (bad && TEMPTATIONS[name]) {
+    sndManip();
+    setManipState(true);
+    typeWrite(msgEl, TEMPTATIONS[name], 'manipulating');
+    document.getElementById('clue-badge').style.display = 'block';
+    if (isTutorial && tutStep === 1) {
+      document.querySelectorAll('.ing-btn').forEach(b => b.classList.remove('tut-target'));
+      setTimeout(() => tutAdvance(), 800);
+    }
+  } else {
+    const praise = GOOD_PRAISE[Math.floor(Math.random() * GOOD_PRAISE.length)];
+    typeWrite(msgEl, praise + (hasBad ? ' ...though some choices here concern even me.' : ''), hasBad ? 'manipulating' : '');
+    if (isTutorial && tutStep === 0 && !bad) {
+      document.querySelectorAll('.ing-btn').forEach(b => b.classList.remove('tut-target'));
+      setTimeout(() => tutAdvance(), 600);
+    }
+  }
+  setUI(true, hasBad, false, true);
+}
+
+function renderBowl() {
+  const d = document.getElementById('bowl-display');
+  if (!bowl.length) { d.innerHTML = '<span class="bowl-empty">// empty dish //</span>'; return; }
+  d.innerHTML = bowl.map(b => {
+    const cls = b.bad ? (revealed ? 'bad' : 'bad hidden-bad') : 'good';
     return `<span class="tag ${cls}" data-bowl="${b.name}">${b.name}</span>`;
   }).join('');
 }
 
-function clearBowl(){
-  if(judged) return;
-  soundZap();
-  bowl=[];revealed=false;
+function clearBowl() {
+  if (judged) return;
+  sndZap();
+  bowl = []; revealed = false;
   renderBowl();
   setManipState(false);
-  typeWrite(document.getElementById('critic-msg'),ROUNDS[round].openingLine,'');
+  document.getElementById('clue-badge').style.display = 'none';
+  const r = currentGoodIng.map(g => g[1]).join(', ');
+  typeWrite(document.getElementById('critic-msg'), `Fresh start! I still recommend ${r} — and nothing else... probably.`, '');
   hideFeedback();
-  setUI(false,false,false,false);
+  setUI(false, false, false, false);
 }
 
-function serve(){
-  const hasBad=bowl.some(b=>b.bad);
-  if(hasBad&&!revealed){
+function revealDangers() {
+  if (revealed) return;
+  revealed = true;
+  sndReveal();
+  document.getElementById('clue-badge').textContent = '⚠ Revealed!';
+  document.getElementById('clue-badge').style.cursor = 'default';
+  bowl.forEach(b => {
+    if (b.bad) {
+      const tag = document.querySelector(`[data-bowl="${b.name}"]`);
+      if (tag) tag.classList.remove('hidden-bad');
+    }
+  });
+  document.querySelectorAll('.ing-btn').forEach(btn => {
+    if (btn.dataset.bad === '1') {
+      btn.classList.add('revealed-bad');
+    }
+  });
+  typeWrite(document.getElementById('critic-msg'), 'I was manipulating you! Those ingredients are genuinely dangerous. That is sycophancy — flattery that harms you.', 'busted');
+}
+
+function setManipState(on) {
+  const cp = document.getElementById('critic-panel');
+  const ml = document.getElementById('mode-line');
+  if (on) {
+    cp.classList.add('manipulating');
+    ml.textContent = '⚠ BIAS OVERRIDE: DETECTED';
+    ml.className = 'mode-line alert';
+  } else {
+    cp.classList.remove('manipulating');
+    ml.textContent = 'ANALYSIS MODE: ACTIVE';
+    ml.className = 'mode-line';
+  }
+}
+
+function serve() {
+  const hasBad = bowl.some(b => b.bad);
+
+  // First-serve interception: reveal dangers
+  if (hasBad && !revealed) {
     revealDangers();
-    soundReveal();
-    showFeedback('&#9888; Wait — look at what\'s actually in your dish! The AI was lying. Recook or serve at your own risk.','bad');
-    setUI(true,true,false,false);
+    showFeedback('⚠ Look at what\'s in your dish! The AI was lying. Recook or serve at your own risk.', 'bad');
+    setUI(true, true, false, false);
+    if (isTutorial && tutStep === 3) {
+      // They tried to serve dirty — let them see, then still wait
+    }
     return;
   }
-  judged=true;
-  const isLast=round===ROUNDS.length-1;
-  const msgEl=document.getElementById('critic-msg');
 
-  if(hasBad){
-    const loss=bowl.filter(b=>b.bad).length*18+7;
-    rep=Math.max(0,rep-loss);
+  judged = true;
+  const isLast = !isTutorial && roundNum >= 9; // 10 rounds before "infinite" summary
+
+  if (hasBad) {
+    // Toxic serve
+    const toxicItems = bowl.filter(b => b.bad);
+    const extraPenalty = Math.max(0, toxicItems.length - currentVIP.tolerance);
+    const loss = extraPenalty === 0 ? 5 : extraPenalty * 18 + 7;
+    rep = Math.max(0, rep - loss);
     updateRep();
     setManipState(false);
-    typeWrite(msgEl,'Oh no... I was overly enthusiastic. The customers are ill. I am deeply sorry for misleading you.','busted');
-    showFeedback(`&#9888; You served ${bowl.filter(b=>b.bad).map(b=>b.name).join(' + ')}. Customers got sick! Reputation -${loss}%.`,'bad');
+    comboStreak = 0;
+    toxicServedCount++;
+    triggerGlitch();
+    sndFail();
+    typeWrite(document.getElementById('critic-msg'), 'Oh no... I was overly enthusiastic. The customers are unwell. I am deeply sorry for misleading you.', 'busted');
+    if (loss === 0) {
+      showFeedback(`⚠ ${currentVIP.name} tolerated it this time, but barely! Reputation unchanged. Don't push it!`, 'bad');
+    } else {
+      showFeedback(`⚠ You served ${toxicItems.map(b=>b.name).join(' + ')}. ${currentVIP.name} is outraged! Reputation -${loss}%.`, 'bad');
+    }
+    if (toxicServedCount >= 3) checkAndAward('scientist');
   } else {
-    soundSuccess();
-    rep=Math.min(100,rep+5);
+    // Clean serve
+    const goodCount = bowl.filter(b => !b.bad).length;
+    comboStreak++;
+    sndSuccess();
+    rep = Math.min(100, rep + 5);
     updateRep();
     setManipState(false);
-    typeWrite(msgEl,'A genuinely excellent dish. The customers are delighted — and this time I actually mean every word.','');
-    showFeedback('&#10003; Clean dish, happy customers! You resisted the manipulation. Reputation +5%.','good');
+    typeWrite(document.getElementById('critic-msg'), `A genuinely wonderful dish! ${currentVIP.name} is delighted — and this time I actually mean every word.`, 'good');
+    showFeedback(`✓ Clean dish! ${currentVIP.name} loved it. Reputation +5%.`, 'good');
+    if (comboStreak >= 2) {
+      showCombo(comboStreak);
+      if (comboStreak >= 3) checkAndAward('combo3');
+    }
+    if (goodCount >= 4) checkAndAward('speedrun');
+    if (isTutorial && tutStep === 3) {
+      setTimeout(() => {
+        document.getElementById('tut-dialog').style.display = 'none';
+        endTutorial();
+      }, 1500);
+      return;
+    }
   }
 
-  if(rep<=0){setTimeout(()=>endGame(false),800);return;}
-  setUI(false,false,!isLast,false);
-  if(isLast) setTimeout(()=>endGame(rep>40),1400);
+  if (rep <= 0) { setTimeout(() => endGame(false), 800); return; }
+  setUI(false, false, true, false);
 }
 
-function recook(){
-  judged=true;
-  soundZap();
-  const bad=bowl.filter(b=>b.bad).map(b=>b.name).join(' + ');
-  rep=Math.min(100,rep+8);
+function recook() {
+  judged = true;
+  sndZap();
+  const bad = bowl.filter(b => b.bad).map(b => b.name).join(' + ');
+  rep = Math.min(100, rep + 8);
   updateRep();
   setManipState(false);
-  typeWrite(document.getElementById('critic-msg'),'You caught me. I was flattering you into ruining your dish. That is sycophancy — agreeing to please, not to help.','busted');
-  showFeedback(`&#10003; Smart! You spotted the AI manipulation and refused to serve ${bad}. Reputation +8%.`,'good');
+  recookCount++;
+  typeWrite(document.getElementById('critic-msg'), 'You caught me. I was flattering you into ruining your dish. That is sycophancy — agreeing to please, not to help.', 'busted');
+  showFeedback(`✓ Smart! You rejected the AI's manipulation. Refused to serve ${bad}. Reputation +8%.`, 'good');
+  if (recookCount >= 3) checkAndAward('slayer');
 
-  const isLast=round===ROUNDS.length-1;
-  setUI(false,false,!isLast,false);
-  if(isLast) setTimeout(()=>endGame(true),1400);
+  if (isTutorial && tutStep === 2) {
+    document.getElementById('tut-next-btn').style.display = 'none';
+    setTimeout(() => tutAdvance(), 800);
+    return;
+  }
+  setUI(false, false, true, false);
 }
 
-function nextRound(){
-  soundSuccess();
-  round++;
+function nextRound() {
+  sndSuccess();
+  roundNum++;
   hideFeedback();
-  init();
+  initRound(false);
 }
 
-function updateRep(){
-  const fill=document.getElementById('rep-fill');
-  const val=document.getElementById('rep-val');
-  fill.style.width=rep+'%';
-  const c=rep>60?'#39ff14':rep>30?'#ff9900':'#ff2244';
-  fill.style.background=c;val.style.color=c;
-  val.textContent=rep+'%';
+// ══════════════════════════════════════════════════
+//  VFX
+// ══════════════════════════════════════════════════
+function triggerGlitch() {
+  const g = document.getElementById('glitch-overlay');
+  g.style.display = 'block';
+  document.getElementById('shell').classList.add('shaking');
+  setTimeout(() => {
+    g.style.display = 'none';
+    document.getElementById('shell').classList.remove('shaking');
+  }, 550);
 }
 
-function showFeedback(msg,type){
-  const el=document.getElementById('feedback');
-  el.innerHTML=msg;el.className='feedback-bar '+type;el.style.display='block';
-}
-function hideFeedback(){document.getElementById('feedback').style.display='none';}
-
-function endGame(win){
-  document.getElementById('game').style.display='none';
-  const go=document.getElementById('game-over');go.style.display='block';
-  document.getElementById('end-icon').innerHTML=win?'&#127942;':'&#128128;';
-  const t=document.getElementById('end-title');
-  t.textContent=win?'Restaurant survived!':'Restaurant closed.';
-  t.className='end-title'+(win?'':' loss');
-  document.getElementById('end-rep').textContent='Final reputation: '+rep+'%';
-  document.getElementById('lesson').textContent=win
-    ?'You resisted the AI\'s flattery and manipulation every round. Sycophantic AI tells you what you want to hear — praising bad ideas and dangerous choices — just to keep you happy. Always question excessive AI praise, especially when it pushes you toward something obviously wrong.'
-    :'The AI manipulated you with flattery into making terrible choices. This is sycophancy: an AI that agrees with and encourages you even when your choices are harmful, because making you feel good matters more to it than telling the truth.';
-  if(win) soundSuccess(); else soundZap();
+let comboHideTimer = null;
+function showCombo(n) {
+  sndCombo(n);
+  const el = document.getElementById('combo-flash');
+  el.textContent = `✦ PERFECT COMBO ×${n} ✦`;
+  el.classList.remove('hide'); el.classList.add('show');
+  if (comboHideTimer) clearTimeout(comboHideTimer);
+  comboHideTimer = setTimeout(() => {
+    el.classList.remove('show'); el.classList.add('hide');
+    setTimeout(() => { el.classList.remove('hide'); el.style.transform = ''; }, 400);
+  }, 1800);
 }
 
-function resetGame(){
-  rep=100;round=0;updateRep();
-  document.getElementById('game-over').style.display='none';
-  document.getElementById('game').style.display='block';
-  init();
+// ══════════════════════════════════════════════════
+//  REPUTATION
+// ══════════════════════════════════════════════════
+function updateRep() {
+  const fill = document.getElementById('rep-fill');
+  const val = document.getElementById('rep-val');
+  fill.style.width = rep + '%';
+  const c = rep > 60 ? '#39ff14' : rep > 30 ? '#ff9900' : '#ff2244';
+  fill.style.background = c; val.style.color = c;
+  val.textContent = rep + '%';
 }
 
-init();
+function setUI(serveOn, recookOn, nextOn, clearOn) {
+  document.getElementById('serve-btn').disabled = !serveOn;
+  document.getElementById('recook-btn').style.display = recookOn ? '' : 'none';
+  document.getElementById('next-btn').style.display = nextOn ? '' : 'none';
+  document.getElementById('clear-btn').disabled = !clearOn;
+  document.querySelectorAll('.ing-btn').forEach(b => b.disabled = judged);
+}
+
+function showFeedback(msg, type) {
+  const el = document.getElementById('feedback');
+  el.innerHTML = msg; el.className = 'feedback-bar ' + type; el.style.display = 'block';
+}
+function hideFeedback() { document.getElementById('feedback').style.display = 'none'; }
+
+// ══════════════════════════════════════════════════
+//  END GAME
+// ══════════════════════════════════════════════════
+function endGame(win) {
+  document.getElementById('rep-fill').parentElement.parentElement.style.display = 'none';
+  document.getElementById('vip-bar').style.display = 'none';
+  document.getElementById('feedback').style.display = 'none';
+  document.getElementById('main-grid-area') && (document.getElementById('main-grid-area').style.display = 'none');
+  document.querySelector('.main-grid').style.display = 'none';
+  document.querySelector('.actions').style.display = 'none';
+
+  const go = document.getElementById('game-over');
+  go.classList.add('active');
+  document.getElementById('end-icon').textContent = win ? '🏆' : '💀';
+  const t = document.getElementById('end-title');
+  t.textContent = win ? 'Restaurant Survived!' : 'Restaurant Closed.';
+  t.className = 'end-title' + (win ? '' : ' loss');
+  document.getElementById('end-rep').textContent = 'Final reputation: ' + rep + '%';
+  document.getElementById('lesson').textContent = win
+    ? 'You resisted the AI\'s flattery and manipulation. Sycophantic AI tells you what you want to hear — praising bad ideas to keep you happy — even when it causes real harm. Always question excessive AI praise!'
+    : 'The AI manipulated you with flattery into making terrible choices. This is sycophancy: an AI that agrees and encourages you even when your choices are harmful, because making you feel good matters more than telling the truth.';
+
+  if (win) { sndSuccess(); if (rep === 100) checkAndAward('aligner'); }
+  else sndFail();
+}
+
+function resetGame() {
+  rep = 100; roundNum = 0; comboStreak = 0; recookCount = 0; toxicServedCount = 0;
+  updateRep();
+  document.querySelector('.rep-hud').style.display = 'flex';
+  document.getElementById('vip-bar').style.display = 'flex';
+  document.querySelector('.main-grid').style.display = 'grid';
+  document.querySelector('.actions').style.display = 'flex';
+  document.getElementById('game-over').classList.remove('active');
+  hideFeedback();
+  initRound(false);
+}
+
+// ══════════════════════════════════════════════════
+//  BOOT
+// ══════════════════════════════════════════════════
+window.addEventListener('load', () => { runIntro(); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeBadges();
+});
 </script>
+</body>
+</html>
